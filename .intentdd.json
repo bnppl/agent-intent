@@ -6,16 +6,19 @@
   "glue_roots": [
     "features/steps",
     "features/support",
-    "features/environment.py"
+    "features/hooks.ts"
   ],
   "control_paths": [
-    "intentdd",
+    "src",
+    "runtime",
+    "scripts",
     ".intentdd.json",
     ".agents",
     "AGENTS.md",
-    "requirements.txt",
-    "requirements.lock",
-    "pyproject.toml",
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "cucumber.mjs",
     ".github",
     ".githooks"
   ]

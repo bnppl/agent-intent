@@ -1,0 +1,33 @@
+{
+  "name": "intent-dd",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Human-owned Gherkin intent, local annotation, and deterministic Git verification",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "intent-dd": "runtime/cli.cjs"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build.mjs --check",
+    "typecheck": "tsc --noEmit",
+    "start": "node runtime/cli.cjs serve",
+    "intent": "node runtime/cli.cjs",
+    "test:acceptance": "node --import tsx node_modules/@cucumber/cucumber/bin/cucumber.js",
+    "test:unit": "node --import tsx --test tests/local-workflow.test.ts",
+    "test": "npm run typecheck && npm run build:check && npm run test:acceptance && npm run test:unit"
+  },
+  "dependencies": {
+    "@cucumber/gherkin": "42.0.1"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "13.3.0",
+    "@types/node": "24.19.2",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  }
+}
