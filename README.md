@@ -1,111 +1,121 @@
 # Intent DD
 
-Build AI-assisted software from a human-owned executable specification. Intent DD uses its own Gherkin contract to develop and test itself.
+Build AI-assisted software from a human-owned executable specification. Intent DD uses its own Gherkin contract to develop and test itself. The implementation, browser client, and Cucumber-JS glue are TypeScript; Python is not required.
 
-## The three tools
+## Three tools, one contract
 
 | Tool | Responsibility |
 | --- | --- |
-| [Developer skill](.agents/skills/intent-dd/SKILL.md) | Guide the developer from behavioural examples to implementation. Never self-approve changes in meaning. |
-| Local web workbench | Read real `.feature` files and write `@intent` annotations directly to source, without an agent. Review the exact staged diff. |
-| Deterministic pre-commit verifier | Compare committed `HEAD` to the Git index; block changes to intent specifications, glue/support, or verification controls without explicit local human approval. |
+| [Developer skill](.agents/skills/intent-dd/SKILL.md) | Guide behavioural examples, implementation, and human-owned changes in meaning. |
+| Local web workbench | Read real `.feature` files and write `@intent` annotations directly into source without an agent. Review the exact staged diff. |
+| Pre-commit verifier | Compare committed HEAD with the Git index; block changes to intent specifications, glue/support, and verification controls without explicit local approval for that revision. |
 
-Only Gherkin classification is supported by the local tool in this version. Glue protection is language-independent and deliberately conservative: **one marked scenario protects its whole feature file and the complete configured glue/support pool**. This includes new registrations, shared steps, hooks, helpers, file modes, and deletions. It may require review for unrelated glue changes. It does not infer a call graph.
+Only Gherkin classification is supported. One marked scenario protects its **whole feature file** and the **complete configured glue/support pool**, including shared steps, hooks, helpers, new registrations, file modes, renames, and deletions. This deliberately over-protects; it does not infer a dependency call graph. Glue can be written in any language.
 
-## Quick start
+## Run locally
 
-Requires Python 3.10+ and Git. From a clone of this repository:
+Requires **Node.js 24+ and Git**. The committed, self-contained JavaScript bundle runs without installing packages:
 
 ```sh
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.lock
-python -m intentdd install-hook
-python -m intentdd serve
+npm run intent -- install-hook
+npm start
 ```
 
-Open the printed URL, normally **http://127.0.0.1:8765**. Keep that command running while using the view. It binds only to loopback. The URL must use `127.0.0.1`, with the printed port, because Host and Origin are checked. No AI or external service participates in annotation or approval.
+Open the printed URL, normally **http://127.0.0.1:8765**. The server binds only to loopback and checks the exact Host and Origin. Keep it running while using the browser. In a remote container, forward the port to the same local URL. No AI or external service participates in annotation or approval.
 
-When using a remote development container, forward the port and run the browser on the same loopback URL. The old deployed static demo cannot edit a local checkout or run this server.
+Equivalent direct commands, without npm:
 
-## Developer workflow
+```sh
+node runtime/cli.cjs install-hook
+node runtime/cli.cjs serve --port 8765
+```
 
-1. Define one small example in a `.feature` file and review its meaning with a human.
-2. Open the local workbench. Toggle **Mark as intent**. The server writes `@intent` into the real file, preserving other tags and line endings. It never stages or commits.
-3. Observe the acceptance test fail, implement the behaviour, and run the tests.
-4. Stage intentionally with Git. The **Staged review** tab shows the complete staged diff, affected protected paths, HEAD, and index tree SHA.
-5. When protected content changes, a human enters their name, rationale, and `APPROVE INTENT CHANGE` in the local view.
-6. Commit. The hook verifies the same staged revision. Any further staging or a different HEAD invalidates the approval.
+The installation must already be committed: the hook loads `runtime/cli.cjs` from **HEAD**, never the working or staged candidate bundle. Existing unrelated hooks and `core.hooksPath` configurations are preserved; installation refuses to overwrite or silently reconfigure them.
 
-New intent and removal of an intent tag also require acceptance. Feature-, Rule-, and Examples-level tags are recognized as inherited protection. The view cannot remove inherited intent from a single child; edit the parent tag explicitly and review that source change. Scenario Outlines, Examples, Backgrounds, data tables, docstrings, and Gherkin languages are parsed by the official Cucumber parser. The whole-feature boundary protects their source without approximating their semantics.
+## Development and validation
 
-## Configure the glue boundary
+```sh
+npm ci
+npm run build
+npm test
+```
 
-`.intentdd.json` is a committed configuration:
+`npm test` type-checks shared contracts, verifies the tracked bundle matches source, runs the unchanged Gherkin acceptance specification through Cucumber-JS, and exercises the actual local API and Git hook in temporary repositories. There are no Python tests or Python runtime dependencies.
+
+After editing TypeScript or web assets, run `npm run build` and include the `runtime/cli.cjs` change in review. `npm run build:check` detects drift without modifying the bundle. The hook never installs dependencies, invokes a compiler, or fetches packages. Parser and UI assets are embedded into the bundle. The lockfile pins build/test dependencies; builds contain no timestamp or machine-specific absolute paths.
+
+## Working loop
+
+1. Define one small Gherkin example and review its meaning with a human.
+2. Open the local workbench. Toggle **Mark as intent** to write `@intent` into the actual scenario source. Other tags and line endings are preserved. Nothing is automatically staged or committed.
+3. Observe a new behaviour's acceptance test fail, implement it, then run the suite. For refactors, use green-before/green-after checks without fabricating a failure.
+4. Stage intentionally. Inspect the **Staged review** tab: the complete staged diff, protected paths, HEAD, and index tree SHA.
+5. For protected changes, a human supplies their name, rationale, and the exact phrase `APPROVE INTENT CHANGE`.
+6. Commit the reviewed revision. Any additional staging or a new HEAD invalidates approval.
+
+New intent and removal of an intent tag also require acceptance. Feature-, Rule-, and Examples-level intent is inherited. A child toggle cannot remove inherited protection: edit the parent tag in source and review it. The official Gherkin parser handles Scenario Outlines, Examples, Backgrounds, data tables, docstrings, and language keywords; protection compares exact source bytes.
+
+## Build this tool from its own specification
+
+[features/intent_workflow.feature](features/intent_workflow.feature) is retained byte-for-byte from the Python prototype. It expresses the 17 acceptance scenarios independently of the implementation language. Its TypeScript glue uses domain vocabulary and a protocol driver to exercise real temporary Git repositories, the CLI, and the HTTP API.
+
+```sh
+npm run test:acceptance
+npm run intent -- spec
+npm run intent -- status
+npm run intent -- verify
+```
+
+`spec` renders the **committed** Gherkin intent as an agent bootstrap prompt, avoiding a separately maintained prose specification. Inspect working changes separately. The initial agent-drafted contract still needs human acceptance in the implementation PR; an `@intent` annotation does not prove that acceptance already happened.
+
+## Configure complete glue coverage
+
+`.intentdd.json` defines the boundary:
 
 ```json
 {
   "version": 1,
   "feature_roots": ["features"],
-  "glue_roots": ["features/steps", "features/support", "features/environment.py"],
-  "control_paths": ["intentdd", ".intentdd.json", ".agents", "AGENTS.md", "requirements.txt", "requirements.lock", "pyproject.toml", ".github", ".githooks"]
+  "glue_roots": ["features/steps", "features/support", "features/hooks.ts"],
+  "control_paths": ["src", "runtime", "scripts", ".intentdd.json", ".agents", "AGENTS.md", "package.json", "package-lock.json", "tsconfig.json", "cucumber.mjs", ".github", ".githooks"]
 }
 ```
 
-**Include every runtime glue location and imported test helper in `glue_roots`.** For example, a Cucumber project may use `features/step_definitions` instead of `features/steps`. Include runner/discovery configuration, dependency manifests, and other relevant test controls in `control_paths`. The tool protects the union of old and new boundaries, so weakening configuration cannot hide a change. Core verifier paths and config are always protected.
+Include **every runtime glue directory, imported test helper, and lifecycle hook** in `glue_roots`. Include runner/discovery configuration, dependency manifests, and other test controls in `control_paths`. Paths are repository-relative, not glob expressions. The system under test should remain outside the glue boundary so its implementation can evolve.
 
-The system under test belongs outside the glue boundary so implementation can evolve. Missing glue for an intent contract, malformed Gherkin, unresolved merges, unsafe paths, and symlinked glue/spec files fail closed. Missing dependencies also make the hook fail.
+The verifier considers the union of old and new boundaries; removing a root cannot hide a staged change. Core verification paths and configuration are always protected. Missing glue for an intent contract, malformed Gherkin, unresolved merges, unsafe paths, and symlinked glue/spec files fail closed.
 
-Changing another unmarked scenario in a feature that contains intent still requires review. Changing any configured glue file while intent exists still requires review. A future adapter can narrow this to validated per-scenario step dependencies; this version chooses over-protection.
+To adopt the tool in another repository, vendor the reviewed `runtime/cli.cjs` bundle and configuration, commit the installation, then run `node runtime/cli.cjs install-hook`. Source and build tools are only needed if you plan to develop the tool there. Review that repository's complete glue boundary before relying on it.
 
-To adopt Intent DD in another repository, vendor `intentdd/` and its dependency files, configure the roots, and commit that installation for human review before installing the hook. The loader requires the verifier in the target repository's HEAD; it does not silently trust a separate mutable checkout. Run commands from the vendored repository, or pass `--repo /path/to/repository` while running from the tool checkout.
+## Hook and approval trust
 
-## Build the tool from its own specification
+The hook installs a loader outside tracked source. The loader extracts HEAD's committed bundle into a temporary directory, clears `NODE_OPTIONS` and `NODE_PATH`, and invokes it with the installed Node executable. Staged source or bundle changes cannot replace the running check. Keep that Node executable installed. Verification does not execute repository glue.
 
-[features/intent_workflow.feature](features/intent_workflow.feature) is this tool’s executable specification. Its steps use a domain vocabulary; a protocol driver exercises real temporary Git repositories, CLI subprocesses, and the real local HTTP API. No fixture invokes an AI.
+Approval is stored under the repository's Git directory, outside tracked source. A local key signs a versioned record bound to HEAD and the entire index tree. There is no CLI approval switch. A tracked manifest cannot supply approval, and old Python-format approvals are intentionally not replayed. This is local workflow metadata, not an independently authenticated human signature.
 
-The initial `@intent` suite is drafted by the agent and needs human acceptance in the implementation PR. A tag is not evidence that a person already approved its meaning.
+The server validates request bodies at runtime as well as sharing TypeScript types with the browser. It uses a per-session mutation token, Host/Origin checks, no CORS, no-store responses, a restrictive content security policy, and text-only source rendering. Stale annotation hashes and stale review revisions are rejected.
 
-```sh
-# Execute the Gherkin specification
-python -m behave features/
+**Local Git hooks cannot enforce a security boundary against a same-user agent.** Such a process can bypass a hook, modify `.git` state, or operate the local API. The skill explicitly forbids these escape routes. Stronger enforcement needs protected CI and independently authenticated human approval for the exact revision, without agent approval or bypass privileges. That remote integration is not implemented here.
 
-# Generate an agent bootstrap prompt from committed intent
-python -m intentdd spec
+Coverage is only as complete as the configured glue/support/control roots. Dynamic imports and external helpers outside that boundary are not automatically discovered. Source-change detection does not execute tests or prove their correctness.
 
-# Inspect and verify the exact staged contract
-python -m intentdd status
-python -m intentdd verify
+## Migrating an existing Python checkout
 
-# Regression tests, including real git commit hook execution
-python -m unittest discover -s tests -p 'test_*.py'
-node tests/review.test.cjs
-```
+1. Check out the reviewed TypeScript revision. Keep the original Gherkin source.
+2. Install Node.js 24+; remove the Python virtualenv only when no other project needs it.
+3. Run `npm run intent -- install-hook` after the TypeScript bundle is committed in HEAD. The installer recognizes and replaces its own previous Python loader, while preserving unrelated hooks.
+4. Restart the local server with `npm start`. Old local approvals require fresh review with the TypeScript tool.
 
-The `spec` command reads committed Gherkin source rather than maintaining a second prose specification that can drift. Extend the executable examples first when adding behaviour.
+The earlier Python implementation and browser-only concept remain available in Git history. They are removed from the active tree so there is one runnable workbench.
 
-## Hook and approval mechanics
+## Source layout
 
-The installed hook is a loader outside tracked source. On each commit it extracts the verifier’s Python modules from **HEAD** into a temporary directory and runs that committed version in isolated Python mode. Candidate verifier changes cannot replace the running check. The selected virtualenv interpreter must remain installed. Existing hooks and `core.hooksPath` configuration are preserved; installation refuses to overwrite or silently reconfigure them.
-
-Approval is stored under the repository’s Git directory, outside tracked source. A locally generated key signs the record; verification binds it to HEAD and the entire index tree. It cannot be carried to another revision or supplied by editing a tracked JSON manifest. There is no CLI `--approve` bypass. The browser does not stage or commit anything. This is local audit metadata, not a remotely authenticated signature by a named person.
-
-The HTTP server uses a per-session mutation token, strict Host/Origin checks, same-origin requests, no CORS, no-store responses, and a restrictive content security policy. All source is rendered as text. Annotation requests reject stale file hashes, unsafe paths, and symlinks.
-
-## Enforcement limits
-
-**A pre-commit hook is a local workflow guard, not a security boundary against a same-user agent.** Anyone with the same OS/Git privileges can use `--no-verify`, edit `.git` state, replace the hook, or call the local review API. The local UI authenticates a session, not a human identity. The skill explicitly forbids the agent from using those escape routes. HMAC signing does not change that same-user boundary.
-
-For mandatory enforcement against an autonomous agent, run a trusted verifier in protected CI and require independently authenticated human approval tied to the exact candidate revision, with agent approval/bypass privileges removed. That remote review integration is not implemented here. Do not treat local approval files as proof of human authorization in CI.
-
-Coverage is only as complete as the configured glue/support/control roots. Dynamic imports or external helpers outside those roots are not automatically discovered. Review the boundary when adopting the tool. The verifier detects protected source changes; it does not execute tests or prove they are correct.
-
-## Source and inspiration
-
-- `intentdd/`: repository reader, Gherkin parser, verification, hook installer, local server, and web UI.
-- `features/`: the tool's executable contract, glue, and protocol driver.
+- `src/core/`: Git snapshots, Gherkin parsing/annotation, deterministic verification, and shared types.
+- `src/server.ts`, `src/cli.ts`, `src/hook.ts`: local API, commands, and trusted hook installation.
+- `src/web/`: typed browser client, HTML, and CSS.
+- `runtime/cli.cjs`: committed self-contained runtime, generated from the source above.
+- `features/`: retained specification, TypeScript glue, and protocol driver.
+- `tests/`: hook, HTTP, annotation, approval, and cross-language glue regression tests.
 - `.agents/skills/intent-dd/`: repository developer skill.
-- `tests/`: hook, API, annotation, verification, and earlier prototype regression tests.
-- `dist/`: the earlier browser-only concept demo, retained for reference. It is not the local editor or the enforcement mechanism.
 
-Inspired by [Dave Farley’s four-layer acceptance-testing architecture](https://continuous-delivery.co.uk/downloads/ATDD%20Guide%2026-03-21.pdf): domain test cases, domain-specific language, protocol drivers, and system under test. The intent annotation and approval protocol are this project's design, not an official Farley tool.
+Inspired by [Dave Farley's four-layer acceptance-testing architecture](https://continuous-delivery.co.uk/downloads/ATDD%20Guide%2026-03-21.pdf). Intent classification and local approval are this project's design, not an official Farley product.

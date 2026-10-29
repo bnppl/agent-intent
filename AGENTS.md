@@ -1,7 +1,7 @@
 # Intent DD contributor workflow
 
-Read `.agents/skills/intent-dd/SKILL.md` before changing product behaviour or executable specifications. This is the repository's agent skill, not a separately installed personal ChatGPT skill.
+Read `.agents/skills/intent-dd/SKILL.md` before changing behaviour or executable specifications. This is the repository developer skill, not a separately installed personal ChatGPT skill.
 
-Develop this tool from its own `features/intent_workflow.feature`. The initial executable contract is a proposal for human review in the implementation PR. Thereafter, use the installed pre-commit hook and local human review workflow for protected changes. Never self-approve or bypass the hook.
+Develop from `features/intent_workflow.feature`. Keep intent meaning, assertions, and complete glue/support protection intact. Changes to protected source need human review; never self-approve or bypass the hook. Prepare migration changes as a review proposal rather than silently treating them as accepted intent.
 
-Run the acceptance suite and regression checks documented in README.md. Preserve complete glue/support coverage in `.intentdd.json`.
+Run `npm ci`, `npm run build`, and `npm test`. Commit the generated `runtime/cli.cjs` alongside its source after review. The hook runs the trusted HEAD bundle, with no package installation or candidate compilation.
