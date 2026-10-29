@@ -1,0 +1,77 @@
+<div id="intent-cycle">
+<style>
+#intent-cycle{color:var(--foreground)}
+#intent-cycle .layout{display:grid;grid-template-columns:minmax(170px,.75fr) minmax(0,1.6fr);gap:24px;margin-top:20px}
+#intent-cycle .flow{display:flex;flex-direction:column;gap:6px}
+#intent-cycle .connector{text-align:center;color:var(--muted-foreground)}
+#intent-cycle .panel{min-width:0}
+#intent-cycle .tree{border-left:2px solid var(--border);padding-left:14px;margin:14px 0}
+#intent-cycle .tree .tree{margin-left:10px}
+#intent-cycle .item{margin:12px 0}
+#intent-cycle .spaced{margin:16px 0}
+#intent-cycle .lineage{overflow-wrap:anywhere}
+#intent-cycle pre{white-space:pre-wrap;overflow-wrap:anywhere}
+#intent-cycle h3{margin-top:0}
+#intent-cycle .note{margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+#intent-cycle .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+#intent-cycle .result{border-left:2px solid var(--border);padding-left:12px;margin:16px 0}
+#intent-cycle .status{margin-bottom:16px}
+@media(max-width:560px){#intent-cycle .layout{grid-template-columns:minmax(0,1fr)}#intent-cycle .flow{display:grid;grid-template-columns:1fr 1fr;gap:8px}#intent-cycle .connector{display:none}}
+</style>
+<h2>Intent DD · Small iterations, explicit control</h2>
+<div class="text-small text-muted">Interactive concept · all approvals and test outcomes are simulated</div>
+<div class="layout">
+<nav class="flow" aria-label="Iteration lifecycle">
+<button type="button" class="btn btn-block" data-stage="0" aria-pressed="true">1 · Explore a small change</button><div class="connector" aria-hidden="true">↓ ↑</div>
+<button type="button" class="btn btn-block" data-stage="1" aria-pressed="false">2 · Zoom & trace</button><div class="connector" aria-hidden="true">↓ ↑</div>
+<button type="button" class="btn btn-block" data-stage="2" aria-pressed="false">3 · Agree the batch</button><div class="connector" aria-hidden="true">↓</div>
+<button type="button" class="btn btn-block" data-stage="3" aria-pressed="false">4 · Implement & learn</button><div class="connector" aria-hidden="true">↓ ↑</div>
+<button type="button" class="btn btn-block" data-stage="4" aria-pressed="false">5 · Verify & review</button><div class="connector" aria-hidden="true">↓ ↑</div>
+<button type="button" class="btn btn-block" data-stage="5" aria-pressed="false">6 · Challenge the tests</button>
+<div class="connector">↺ Next small iteration</div>
+</nav>
+<section class="panel" aria-label="Selected stage"><div id="cycle-detail"></div></section>
+</div>
+<div class="note text-small">Required agreement: intent, protected glue, initial implementation classification and lineage changes. Optional approval: changes to already accepted implementation choices.</div>
+<div class="sr-only" id="cycle-live" aria-live="polite"></div>
+</div>
+<script>
+(()=>{
+const root=document.getElementById('intent-cycle');
+const panel=root.querySelector('#cycle-detail');
+const live=root.querySelector('#cycle-live');
+let stage=0,level=0,approved=false,optional=false,first=false,second=false;
+let draftId='booking.compare-half-open-time-ranges';
+const nodes=[
+{id:'booking.find-available-courts',title:'Find available courts',kind:'High-level intent',rule:'Players can identify courts available for their requested interval.',example:'Given a requested booking interval\nWhen availability is requested\nThen only courts free for that whole interval are returned'},
+{id:'booking.prevent-overlapping-bookings',title:'Prevent overlapping bookings',kind:'Detailed intent',rule:'Bookings on the same court must not overlap.',example:'Given Court 1 is booked from 10:00 to 11:00\nWhen another booking requests 10:30 to 11:30\nThen Court 1 is unavailable'},
+{id:'booking.allow-adjacent-bookings',title:'Allow adjacent bookings',kind:'Boundary intent',rule:'A booking ending at 11:00 permits another to start at 11:00.',example:'Given Court 1 is booked from 10:00 to 11:00\nWhen another booking requests 11:00 to 12:00\nThen the existing booking does not prevent it'}
+];
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const jump=(n,label)=>'<button type="button" class="btn" data-jump="'+n+'">'+label+'</button>';
+function go(n){stage=n;root.querySelectorAll('[data-stage]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.stage===n)));render();live.textContent='Selected stage '+(n+1);}
+function render(){
+if(stage===0)panel.innerHTML=`<h3>One small learning goal</h3><div class="status"><span class="viz-badge">Example iteration · adjacent bookings</span></div><div class="item"><strong>Question</strong><br>Can a booking start exactly when another ends?</div><div class="item"><strong>Explore ↔ prototype ↔ discuss</strong><br>Try examples before committing to a rule.</div><div class="item"><strong>Iteration boundary</strong><br>Clarify time boundaries; keep unrelated features outside this change.</div><div class="tree">Candidate intent → linked implementation choice → reviewable batch</div>${jump(1,'Explore the abstraction levels →')}`;
+if(stage===1){const n=nodes[Math.min(level,2)];panel.innerHTML=`<h3>Zoom from outcome to mechanism</h3><div class="row"><button type="button" class="btn" data-out ${level===0?'disabled':''}>← Zoom out</button><span>${level+1} / 4 · ${level===3?'Implementation choice':n.kind}</span><button type="button" class="btn" data-in ${level===3?'disabled':''}>Zoom in →</button></div><div class="tree lineage">${nodes.slice(0,Math.min(level+1,3)).map((x,i)=>'<div class="item">'+(i?'↳ ':'')+'<code>'+x.id+'</code></div>').join('')}${level===3?'<div class="item">↳ <code>'+esc(draftId)+'</code> · implementation</div>':''}</div>${level<3?'<strong>'+n.title+'</strong><div class="item">'+n.rule+'</div><pre><code>@intent\n@id:'+n.id+(level?'\n@derived-from:'+nodes[level-1].id:'')+'\n'+n.example+'</code></pre>':`<label class="form-label" for="cycle-id">Agent-suggested ID · editable before acceptance</label><input id="cycle-id" class="form-control" value="${esc(draftId)}" ${approved?'disabled':''}><div id="cycle-id-error" role="alert"></div><pre><code id="cycle-annotation"></code></pre><div class="item">Rationale: use half-open time ranges so touching boundaries are not treated as overlaps.</div><div class="text-small">The link and rationale require human agreement. An ID alone does not justify the choice.</div>`}<div class="spaced">${jump(2,'Review the proposed batch →')}</div>`;if(level===3)updateAnnotation();}
+if(stage===2)panel.innerHTML=`<h3>Agree changes as one small batch</h3><div class="status"><span class="viz-badge">${approved?'Exact demo revisions accepted':'Awaiting explicit human agreement'}</span></div><div class="tree"><div class="item"><strong>Intent amendment</strong><br><code class="lineage">booking.allow-adjacent-bookings</code><br>Accept the boundary example and its parent link.</div><div class="item"><strong>Protected glue</strong><br>Review scenario-to-step mapping and the step code interpreting the times.</div><div class="item"><strong>Initial implementation classification</strong><br><code class="lineage">${esc(draftId)}</code><br>Accept derivation from adjacent-booking intent and its rationale.</div></div><div class="viz-controls"><button type="button" class="btn btn-primary" data-approve ${approved?'disabled':''}>${approved?'Batch agreed':'Explicitly agree this batch'}</button>${jump(1,'Inspect lineage')}</div><div class="note text-small">Approval is bound to exact revisions. Later protected changes need fresh agreement. Accepted IDs are stable; renaming updates references through review.</div>`;
+if(stage===3)panel.innerHTML=`<h3>Build inside the agreement</h3><div class="tree"><div class="item">Agreed intent test fails → implement → intent test passes</div><div class="item">Implementation tests document mechanisms derived from accepted intent.</div><div class="item">New domain insight → propose a small amendment → explicit agreement</div></div><div class="item">Existing implementation choices remain editable, with changes listed for optional approval.</div><div class="viz-controls">${jump(2,'Return to agreement')}${jump(4,'Inspect the change review →')}</div>`;
+if(stage===4)panel.innerHTML=`<h3>Review every behavioural change</h3><div class="tree"><div class="item"><strong>Required agreement</strong><br>Intent + protected glue + initial classification + changed lineage<br><span>${approved?'Demo batch: agreed':'Demo batch: approval missing'}</span></div><div class="item"><strong>Optional approval</strong><br>Existing choice: return available courts in ascending court-number order.<br>Changed to descending order; membership and booking rules preserved.<div class="row"><button type="button" class="btn" data-optional ${optional?'disabled':''}>${optional?'Implementation change approved':'Optionally approve implementation change'}</button></div></div><div class="item"><strong>Scope concern</strong><br>Automatic booking emails: no accepted parent intent or necessary rationale.<br>Remove or propose new intent; never silently label as implementation.<br><span class="text-small">Open policy: whether scope concerns block completion.</span></div></div><div class="viz-controls"><button type="button" class="btn btn-primary" data-verify>Simulate deterministic check</button>${jump(2,'Review required agreement')}</div><div id="cycle-check" class="result" aria-live="polite">Checks exact approvals, Gherkin and glue protection, unique IDs and valid lineage.</div>`;
+if(stage===5)panel.innerHTML=`<h3>Two passes, separate evidence</h3><div class="tree"><div class="item"><strong>Baseline</strong><br>Intent and implementation suites pass before mutation.</div><div class="item"><strong>Pass 1 · intent tests only</strong><br>Mutate implementation and run intent tests at every abstraction level.<div class="row"><button type="button" class="btn btn-primary" data-first>Simulate intent pass</button></div></div><div class="item"><strong>Pass 2 · implementation tests</strong><br>Run the same surviving mutants against implementation tests.<div class="row"><button type="button" class="btn" data-second ${first?'':'disabled'}>Simulate survivor pass</button></div></div></div><div id="cycle-mutants" aria-live="polite">${mutationResults()}</div><div class="note text-small">Killed by intent ≠ caught only by implementation. Equivalent mutants retain a reasoned exemption path; unexplained survivors stay visible.</div>`;
+wire();
+}
+function updateAnnotation(){const el=panel.querySelector('#cycle-annotation');if(el)el.textContent='@implementation\n@id:'+draftId+'\n@derived-from:booking.allow-adjacent-bookings\nScenario: Compare half-open time ranges';}
+function mutationResults(){if(!first)return '<div class="result">Illustrative mutations · no tests execute here</div>';return `<div class="result"><div class="item"><strong>Caught by intent</strong><br>Permit overlapping bookings → intent test fails.</div><div class="item"><strong>${second?'Caught only by implementation':'Survived intent'}</strong><br>Reverse court ordering → ${second?'existing implementation test fails; link: booking.find-available-courts.':'send to pass 2.'}</div><div class="item"><strong>${second?'Still unexplained':'Survived intent'}</strong><br>Allow zero-duration bookings → clarify the requirement; add a more detailed intent example if needed.</div><div class="item"><strong>${second?'Equivalence candidate':'Survived intent'}</strong><br>Reorder independent checks → ${second?'no behavioural difference demonstrated; submit reasoning for review.':'send to pass 2.'}</div>${second?'<div class="row">'+jump(1,'Refine intent ↗')+jump(2,'Agree survivor classification ↗')+'</div>':''}</div>`;}
+function wire(){
+panel.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>go(+b.dataset.jump));
+const out=panel.querySelector('[data-out]');if(out)out.onclick=()=>{level--;render();};
+const inside=panel.querySelector('[data-in]');if(inside)inside.onclick=()=>{level++;render();};
+const id=panel.querySelector('#cycle-id');if(id)id.oninput=()=>{const v=id.value.trim();const valid=/^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/.test(v)&&!nodes.some(n=>n.id===v);panel.querySelector('#cycle-id-error').textContent=valid?'':'Use a unique domain.name-in-kebab-case ID.';id.setAttribute('aria-invalid',String(!valid));if(valid){draftId=v;updateAnnotation();}};
+const a=panel.querySelector('[data-approve]');if(a)a.onclick=()=>{approved=true;render();live.textContent='Demo batch explicitly agreed';};
+const o=panel.querySelector('[data-optional]');if(o)o.onclick=()=>{optional=true;render();};
+const v=panel.querySelector('[data-verify]');if(v)v.onclick=()=>{panel.querySelector('#cycle-check').textContent=approved?'PASS · Demo revisions match agreement; lineage is valid. Optional implementation approval is '+(optional?'recorded.':'not required.')+' Scope concern remains flagged for review.':'BLOCKED · Required agreement missing. Optional implementation approval cannot authorise protected changes.';};
+const f=panel.querySelector('[data-first]');if(f)f.onclick=()=>{first=true;second=false;render();};
+const s=panel.querySelector('[data-second]');if(s)s.onclick=()=>{second=true;render();};
+}
+root.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>go(+b.dataset.stage));render();
+})();
+</script>

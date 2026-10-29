@@ -1,0 +1,87 @@
+<div id="idd-flow">
+  <style>
+    #idd-flow {color:var(--foreground)}
+    #idd-flow .layout {display:grid;grid-template-columns:minmax(180px, 0.8fr) minmax(0,1.5fr);gap:28px;margin-top:20px}
+    #idd-flow .stages {display:flex;flex-direction:column;align-items:stretch;gap:6px}
+    #idd-flow .arrow {text-align:center;color:var(--muted-foreground)}
+    #idd-flow .detail {min-width:0}
+    #idd-flow .branch {border-left:2px solid var(--border);padding-left:16px;margin:16px 0}
+    #idd-flow .branch-label {margin:8px 0}
+    #idd-flow .path {display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:14px 0}
+    #idd-flow .stack {display:flex;flex-direction:column;gap:12px}
+    #idd-flow .rule {display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;margin:14px 0}
+    #idd-flow .mark {color:var(--viz-series-1)}
+    #idd-flow .outcome {margin-top:16px;border-left:3px solid var(--viz-series-1);padding-left:12px}
+    #idd-flow pre {white-space:pre-wrap;overflow-wrap:anywhere}
+    #idd-flow h3 {margin-top:0}
+    #idd-flow .foot {margin-top:22px;border-top:1px solid var(--border);padding-top:14px}
+    @media(max-width:560px){#idd-flow .layout{grid-template-columns:minmax(0,1fr);gap:22px}#idd-flow .stages{display:grid;grid-template-columns:1fr 1fr;gap:8px}#idd-flow .arrow{display:none}#idd-flow .stages button:last-of-type{grid-column:1/-1}}
+  </style>
+  <h2>Intent DD · From ideas to trusted behaviour</h2>
+  <div class="text-small text-muted">Interactive concept · approval and test results are simulated</div>
+  <div class="layout">
+    <nav class="stages" aria-label="Development lifecycle">
+      <button type="button" class="btn btn-block" data-step="0" aria-pressed="false">1 · Explore ideas</button>
+      <div class="arrow" aria-hidden="true">↓ ↑</div>
+      <button type="button" class="btn btn-block" data-step="1" aria-pressed="false">2 · Agree intent</button>
+      <div class="arrow" aria-hidden="true">↓ ↑</div>
+      <button type="button" class="btn btn-block" data-step="2" aria-pressed="true">3 · Zoom in & build</button>
+      <div class="arrow" aria-hidden="true">↓ ↑</div>
+      <button type="button" class="btn btn-block" data-step="3" aria-pressed="false">4 · Check approval</button>
+      <div class="arrow" aria-hidden="true">↓ ↑</div>
+      <button type="button" class="btn btn-block" data-step="4" aria-pressed="false">5 · Challenge intent</button>
+    </nav>
+    <section class="detail" aria-label="Selected lifecycle stage">
+      <div id="idd-detail"></div>
+    </section>
+  </div>
+  <div class="foot viz-row text-small">
+    <span>Idea ↔ prototype</span><span aria-hidden="true">·</span>
+    <span>Parent intent ↔ lower-level intent</span><span aria-hidden="true">·</span>
+    <span>Surviving mutant → refine specification</span>
+  </div>
+  <div class="sr-only" id="idd-status" aria-live="polite"></div>
+</div>
+<script>
+(function(){
+ const root=document.getElementById('idd-flow');
+ const detail=root.querySelector('#idd-detail');
+ const status=root.querySelector('#idd-status');
+ let stage=2, depth=0;
+ const requirements=[
+  {level:'Product outcome',name:'Keep humans in control of behaviour',spec:'AI can implement agreed functionality; changing protected intent requires explicit human agreement.',children:['Control changes to protected specifications','Preserve the meaning carried by glue code'],example:'Given an accepted intent scenario\nWhen AI proposes a change to its expected behaviour\nThen the change cannot pass the intent gate without human approval'},
+  {level:'Capability',name:'Control changes to protected specifications',spec:'The web interface presents the exact proposed revision for human approval before it becomes the accepted intent.',children:['Bind approval to the exact proposed revision','Protect deletion and removal of intent status'],example:'Given a protected scenario has changed\nWhen no human has approved that revision\nThen the pre-commit intent check fails'},
+  {level:'Domain rule',name:'Bind approval to the exact proposed revision',spec:'An approval applies only to the reviewed revision and scope. A subsequent protected change needs a new approval.',children:['Compare the reviewed and staged revision','Reject stale or missing approval'],example:'Given revision B was approved\nAnd the scenario is changed again to revision C\nWhen the intent check runs for revision C\nThen the earlier approval does not authorise it'},
+  {level:'Detailed contract',name:'Compare the reviewed and staged revision',spec:'The revision validated by the deterministic check must match the content and protected dependency scope approved through the web interface.',children:[],example:'Given the reviewed protected content differs from the staged content\nWhen the pre-commit check validates the approval\nThen the commit is blocked'}
+ ];
+ function announce(t){status.textContent=t;}
+ function showStage(i){stage=i;root.querySelectorAll('[data-step]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.step===i)));render();announce('Stage '+(i+1)+' selected');}
+ function controls(){return '<div class="viz-controls"><button type="button" class="btn" data-back>← Zoom out</button><button type="button" class="btn btn-primary" data-in>Zoom into requirement →</button></div>';}
+ function render(){
+  if(stage===0){detail.innerHTML='<h3>Explore before committing</h3><div class="stack"><div class="rule"><span class="mark">↔</span><span>Brainstorm with a human and an agent; use disposable prototypes to resolve uncertainty.</span></div><div class="rule"><span class="mark">◇</span><span>Capture candidate behaviour, examples and unanswered questions.</span></div><div class="rule"><span class="mark">→</span><span>Move forward when the behaviour is clear enough to specify.</span></div></div><button type="button" class="btn btn-primary" data-next>Agree an example →</button>';}
+  if(stage===1){detail.innerHTML='<h3>Make the agreement executable</h3><div class="rule"><span class="mark">◆</span><span>Human and agent resolve ambiguity in examples, outcomes and boundaries.</span></div><pre><code>@intent\nScenario: Unapproved intent change\n  Given an accepted intent scenario\n  When its protected content changes without approval\n  Then the intent check blocks the commit</code></pre><div class="rule"><span class="mark">✓</span><span>Human accepts the specification and its protected scope as the baseline.</span></div><button type="button" class="btn btn-primary" data-next>Refine the requirement →</button>';}
+  if(stage===2){const r=requirements[depth]; detail.innerHTML='<h3>Intent at the level that matters</h3><div class="path" aria-label="Abstraction path">'+requirements.slice(0,depth+1).map((x,j)=>'<button type="button" class="btn btn-ghost" data-depth="'+j+'" aria-pressed="'+(depth===j)+'">'+x.level+'</button>').join('<span aria-hidden="true">›</span>')+'</div><strong>'+r.name+'</strong><div class="branch"><div class="branch-label">'+r.spec+'</div><pre><code>'+r.example+'</code></pre></div>'+controls()+'<div class="text-small text-muted" style="margin-top:14px">'+(r.children.length?'Next refinement: '+r.children.join(' · '):'Stop refining when the contract is precise enough to build and verify.')+'</div><div class="rule"><span class="mark">◆</span><span>Each lower-level intent is explicitly agreed and linked to its parent. Add detail where useful; abstraction depth is optional.</span></div><div class="rule"><span class="mark">↔</span><span>Observe the agreed tests fail, implement, then pass. A conflict with parent intent returns to human discussion.</span></div>';detail.querySelector('[data-back]').disabled=depth===0;detail.querySelector('[data-in]').disabled=depth===requirements.length-1;}
+  if(stage===3){detail.innerHTML='<h3>Verify agreement before committing</h3><div class="text-small text-muted">Protected scope: Gherkin + scenario glue + intent classification</div><div class="rule"><span class="mark">↔</span><span>Compare staged changes with the accepted baseline and exact approvals recorded through the web interface.</span></div><label class="form-label" for="idd-change">Example staged change</label><select class="form-select" id="idd-change"><option value="clean">Implementation only; protected intent unchanged</option><option value="unapproved">Protected scenario or glue changed; no approval</option><option value="approved">Protected change matches explicit human approval</option><option value="stale">Protected change differs from approved revision</option></select><div class="viz-controls" style="margin-top:12px"><button type="button" class="btn btn-primary" data-check>Simulate pre-commit check</button></div><div id="idd-check-result" class="outcome" aria-live="polite">Choose a change and run the simulated check.</div>';}
+  if(stage===4){detail.innerHTML='<h3>Would intent catch broken behaviour?</h3><div class="rule"><span class="mark">1</span><span>Run only tests marked intent, across all abstraction levels, against the unchanged implementation. They must pass first.</span></div><div class="rule"><span class="mark">2</span><span>Introduce controlled faults into the implementation exercised by those tests; rerun only intent tests.</span></div><label class="form-label" for="idd-mutant">Example implementation mutation</label><select class="form-select" id="idd-mutant"><option value="killed">Allow a protected change without approval</option><option value="survived">Accept approval for an older revision</option><option value="equivalent">Reorder checks without changing behaviour</option></select><div class="viz-controls" style="margin-top:12px"><button type="button" class="btn btn-primary" data-mutate>Simulate mutation run</button></div><div id="idd-mutation-result" class="outcome" aria-live="polite">Illustrative outcomes; no tests are executed here.</div><div class="rule"><span class="mark">↻</span><span>Relevant survivors return to refinement and human agreement. Equivalent or out-of-scope mutants need triage.</span></div>';}
+  wire();
+ }
+ function wire(){
+  detail.querySelectorAll('[data-depth]').forEach(b=>b.onclick=()=>{depth=+b.dataset.depth;render();announce(requirements[depth].level+' selected');});
+  const back=detail.querySelector('[data-back]'); if(back)back.onclick=()=>{depth--;render();announce('Zoomed out to '+requirements[depth].level);};
+  const into=detail.querySelector('[data-in]'); if(into)into.onclick=()=>{depth++;render();announce('Zoomed in to '+requirements[depth].level);};
+  const next=detail.querySelector('[data-next]'); if(next)next.onclick=()=>showStage(stage+1);
+  const check=detail.querySelector('[data-check]');if(check)check.onclick=()=>{
+   const type=detail.querySelector('#idd-change').value;
+   const results={clean:'PASS · No protected changes. Continue to intent testing.',unapproved:'BLOCKED · Propose the exact change in the web interface; obtain explicit human agreement.',approved:'PASS · Staged protected content matches the approved revision. Continue to intent testing.',stale:'BLOCKED · Approval is stale. Review and approve the new revision.'};
+   detail.querySelector('#idd-check-result').textContent=results[type];
+  };
+  const mutate=detail.querySelector('[data-mutate]');if(mutate)mutate.onclick=()=>{
+   const type=detail.querySelector('#idd-mutant').value;
+   const results={killed:'KILLED · An intent test fails against the fault. This example detects unapproved changes.',survived:'SURVIVED · Illustrative gap: no intent example rejects stale approval. Zoom in, agree that rule, and add its test.',equivalent:'TRIAGE · Same observable behaviour: a surviving mutant may be equivalent. Survival alone does not establish a missing requirement.'};
+   detail.querySelector('#idd-mutation-result').textContent=results[type];
+   if(type==='survived'){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Return to detailed intent ↗';b.onclick=()=>{depth=2;showStage(2);};detail.querySelector('#idd-mutation-result').append(document.createElement('br'),b);}
+  };
+ }
+ root.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>showStage(+b.dataset.step));render();
+})();
+</script>
