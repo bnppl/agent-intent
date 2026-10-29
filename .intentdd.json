@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "feature_roots": [
+    "features"
+  ],
+  "glue_roots": [
+    "features/steps",
+    "features/support",
+    "features/environment.py"
+  ],
+  "control_paths": [
+    "intentdd",
+    ".intentdd.json",
+    ".agents",
+    "AGENTS.md",
+    "requirements.txt",
+    "requirements.lock",
+    "pyproject.toml",
+    ".github",
+    ".githooks"
+  ]
+}
