@@ -9,6 +9,10 @@
     "features/hooks.ts"
   ],
   "control_paths": [
+    "features/lineage_report_presentation.feature",
+    "tests/lineage-presentation.test.ts",
+    "features/test_lineage.feature",
+    "tests/test-lineage.test.ts",
     "src",
     "runtime",
     "scripts",
@@ -18,8 +22,6 @@
     "package.json",
     "package-lock.json",
     "tsconfig.json",
-    "cucumber.mjs",
-    ".github",
-    ".githooks"
+    "cucumber.mjs"
   ]
 }

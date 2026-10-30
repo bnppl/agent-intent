@@ -1,0 +1,17 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{ts,tsx,mts,cts}]
+# A readability target for editors; this does not wrap code automatically.
+max_line_length = 100
+
+[*.md]
+# Preserve Markdown's two-space hard line breaks.
+trim_trailing_whitespace = false
