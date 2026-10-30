@@ -2,10 +2,10 @@
   "name": "intent-dd",
   "version": "0.2.0",
   "private": true,
-  "description": "Human-owned Gherkin intent, local annotation, and deterministic Git verification",
+  "description": "Gherkin specifications, BDD test lineage, and individual specification acceptance",
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": ">=24.19.0"
   },
   "bin": {
     "intent-dd": "runtime/cli.cjs"
@@ -17,7 +17,8 @@
     "start": "node runtime/cli.cjs serve",
     "intent": "node runtime/cli.cjs",
     "test:acceptance": "node --import tsx node_modules/@cucumber/cucumber/bin/cucumber.js",
-    "test:unit": "node --import tsx --test tests/local-workflow.test.ts",
+    "test:unit": "node --import tsx --test tests/*.test.ts",
+    "test:lineage": "node --import tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./runtime/lineage-reporter.cjs --test-reporter-destination=test-lineage.html tests/*.test.ts",
     "test": "npm run typecheck && npm run build:check && npm run test:acceptance && npm run test:unit"
   },
   "dependencies": {

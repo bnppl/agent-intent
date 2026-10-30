@@ -9,9 +9,9 @@ const notices = ['@cucumber/gherkin', '@cucumber/messages'].map(name => {
   const pkg = JSON.parse(readFileSync(resolve(base, 'package.json'), 'utf8'));
   return name + ' ' + pkg.version + '\n' + readFileSync(resolve(base, 'LICENSE'), 'utf8');
 }).join('\n\n');
-const browser = await build({ absWorkingDir: root, entryPoints: ['src/web/app.ts'], bundle: true, platform: 'browser',
+const lineageBrowser = await build({ absWorkingDir: root, entryPoints: ['src/lineage/client.ts'], bundle: true, platform: 'browser',
   format: 'iife', target: 'es2022', write: false, legalComments: 'inline' });
-const assets = { html: readFileSync(resolve(root, 'src/web/index.html'), 'utf8'), css: readFileSync(resolve(root, 'src/web/style.css'), 'utf8'), js: browser.outputFiles[0].text };
+const assets = { lineageJs: lineageBrowser.outputFiles[0].text };
 const result = await build({ absWorkingDir: root, entryPoints: ['src/cli.ts'], bundle: true, platform: 'node', format: 'cjs',
   target: 'node24', write: false, legalComments: 'inline', minify: true,
   footer: { js: '/* Bundled third-party notices\n' + notices.replaceAll('*/', '* /') + '\n*/' },
@@ -19,9 +19,14 @@ const result = await build({ absWorkingDir: root, entryPoints: ['src/cli.ts'], b
     api.onResolve({ filter: /^intentdd:assets$/ }, () => ({ path: 'assets', namespace: 'intentdd' }));
     api.onLoad({ filter: /.*/, namespace: 'intentdd' }, () => ({ contents: Object.entries(assets).map(([key, value]) => `export const ${key} = ${JSON.stringify(value)};`).join('\n'), loader: 'js' }));
   } }] });
-const output = resolve(root, 'runtime/cli.cjs'), content = result.outputFiles[0].contents;
-if (process.argv.includes('--check')) {
-  let existing; try { existing = readFileSync(output); } catch { /* handled below */ }
-  if (!existing || !existing.equals(Buffer.from(content))) { console.error('runtime/cli.cjs is stale. Run npm run build and review the bundle change.'); process.exitCode = 1; }
-  else console.log('Committed runtime bundle matches TypeScript and web source.');
-} else { mkdirSync(dirname(output), { recursive: true }); writeFileSync(output, content); chmodSync(output, 0o755); console.log('Built runtime/cli.cjs'); }
+const lineage = await build({ absWorkingDir: root, entryPoints: ['src/lineage/reporter.ts'], bundle: true,
+  platform: 'node', format: 'cjs', target: 'node24', write: false, minify: true, legalComments: 'inline',
+  footer: { js: 'module.exports = module.exports.default;\n/* Bundled third-party notices\n' + notices.replaceAll('*/', '* /') + '\n*/' } });
+for (const [path, bundle] of [['runtime/cli.cjs', result], ['runtime/lineage-reporter.cjs', lineage]]) {
+  const output = resolve(root, path), content = bundle.outputFiles[0].contents;
+  if (process.argv.includes('--check')) {
+    let existing; try { existing = readFileSync(output); } catch { /* handled below */ }
+    if (!existing || !existing.equals(Buffer.from(content))) { console.error(path + ' is stale. Run npm run build and review the bundle change.'); process.exitCode = 1; }
+    else console.log(path + ' matches source.');
+  } else { mkdirSync(dirname(output), { recursive: true }); writeFileSync(output, content); chmodSync(output, 0o755); console.log('Built ' + path); }
+}

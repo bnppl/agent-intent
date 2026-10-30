@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "CucumberOpen.cucumber-official",
+    "EditorConfig.EditorConfig",
+    "esbenp.prettier-vscode",
+    "xabikos.JavaScriptSnippets",
+    "HTMLHint.vscode-htmlhint",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-british-english"
+  ]
+}

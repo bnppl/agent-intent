@@ -1,15 +1,17 @@
 import { createServer } from 'node:http';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
-import { html, css, js } from 'intentdd:assets';
-import { IntentError, Repository } from './core/repository.js';
-import { annotate } from './core/gherkin.js';
-import { approve, catalogue, config, object, report, sameRevision, validRevision } from './core/verification.js';
-import type { AnnotationRequest, ApprovalRequest, Workspace } from './core/types.js';
+import { lineageJs } from 'intentdd:assets';
+import { resolve } from 'node:path';
+import { IntentError, object } from './core/files.js';
+import { acceptSpecification, reportModel } from './lineage/state.js';
+import { renderLineage } from './lineage/report.js';
+import { lineageStyles } from './lineage/style.js';
 
 const LIMIT = 65536;
 export function makeServer(root: string): Server {
-  const repo = new Repository(root), token = randomBytes(32).toString('base64url');
+  root = resolve(root);
+  const token = randomBytes(32).toString('base64url');
   const server = createServer((request, response) => { void handle(request, response); });
   function send(response: ServerResponse, code: number, value: unknown, type = 'application/json'): void {
     const body = type === 'application/json' ? JSON.stringify(value) : String(value);
@@ -28,15 +30,13 @@ export function makeServer(root: string): Server {
       if (request.headers['sec-fetch-site'] === 'cross-site') throw new IntentError('Cross-site access refused');
       const path = new URL(request.url || '/', 'http://' + host).pathname;
       if (request.method === 'GET') {
-        if (path === '/') return send(response, 200, html.replace('__SESSION_TOKEN__', token), 'text/html');
-        if (path === '/app.js') return send(response, 200, js, 'text/javascript');
-        if (path === '/style.css') return send(response, 200, css, 'text/css');
-        if (path === '/api/workspace') {
-          const snapshot = repo.snapshot('WORKTREE'), cfg = config(snapshot), rows = catalogue(snapshot, cfg), review = report(repo), diff = repo.diff();
-          if (!sameRevision(repo.revision(), review.revision)) throw new IntentError('Index changed while opening review; refresh');
-          const workspace: Workspace = { root: repo.root, scenarios: rows, config: cfg, review, diff,
-            boundary: 'Local workflow guard; same-user agents can bypass Git hooks. Use protected CI for adversarial enforcement.' };
-          return send(response, 200, workspace);
+        if (path === '/lineage.css') return send(response, 200, lineageStyles, 'text/css');
+        if (path === '/lineage.js') return send(response, 200, lineageJs, 'text/javascript');
+        if (path === '/api/lineage') return send(response, 200, reportModel(root));
+        if (path === '/' || path === '/lineage') {
+          const model = reportModel(root);
+          return send(response, 200, renderLineage(model.snapshot.scenarios, model.snapshot.tests,
+            { runFailed: model.snapshot.runFailed, accepted: model.accepted, revision: model.revision, sessionToken: token }), 'text/html');
         }
         return send(response, 404, { error: 'Not found' });
       }
@@ -51,18 +51,14 @@ export function makeServer(root: string): Server {
       if (size !== length) throw new IntentError('Incomplete request body');
       const value: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'));
       if (!object(value)) throw new IntentError('Expected a JSON object');
-      // All mutations after body collection are synchronous: no interleaved annotation or approval.
-      if (path === '/api/annotation') {
-        if (typeof value.path !== 'string' || typeof value.sourceHash !== 'string' || !/^[0-9a-f]{64}$/.test(value.sourceHash)
-          || typeof value.enabled !== 'boolean' || !Number.isSafeInteger(value.line) || Number(value.line) < 1) throw new IntentError('Invalid annotation request');
-        annotate(repo, value as unknown as AnnotationRequest, config(repo.snapshot('WORKTREE')).feature_roots);
-        return send(response, 200, { saved: true, staged: false });
-      }
-      if (path === '/api/approval') {
-        if (!validRevision(value.revision) || typeof value.reviewer !== 'string' || typeof value.reason !== 'string'
-          || typeof value.acknowledgement !== 'string' || value.reviewer.length > 100 || value.reason.length > 2000) throw new IntentError('Invalid approval request');
-        const approved = approve(repo, value as unknown as ApprovalRequest);
-        return send(response, 200, { approved: true, revision: approved.revision });
+      // Acceptance mutations are synchronous after body collection.
+      if (path === '/api/lineage/accept') {
+        if (typeof value.revision !== 'string' || !/^[0-9a-f]{64}$/.test(value.revision)
+          || typeof value.key !== 'string' || value.key.length > 4096
+          || (value.expectedAcceptance !== null && (typeof value.expectedAcceptance !== 'string'
+            || !/^[0-9a-f]{64}$/.test(value.expectedAcceptance)))) throw new IntentError('Invalid specification acceptance request');
+        acceptSpecification(root, { revision: value.revision, key: value.key, expectedAcceptance: value.expectedAcceptance as string | null });
+        return send(response, 200, { accepted: true, key: value.key });
       }
       return send(response, 404, { error: 'Not found' });
     } catch (error) { if (!response.headersSent) send(response, 409, { error: error instanceof Error ? error.message : String(error) }); else response.end(); }
@@ -76,5 +72,5 @@ export async function serve(root: string, port: number): Promise<void> {
   await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
   const address = server.address();
   if (address && typeof address !== 'string') console.log(`Intent DD: http://127.0.0.1:${address.port}`);
-  console.log('Bound to loopback. Source annotations write directly to disk; staging remains explicit.');
+  console.log('Bound to loopback. Review and accept individual specification changes into intentdd.lock.json.');
 }
