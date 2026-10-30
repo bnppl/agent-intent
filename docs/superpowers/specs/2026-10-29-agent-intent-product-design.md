@@ -190,6 +190,6 @@ Abstraction navigation, lineage annotations, implementation-test classification,
 
 ## Design artifacts
 
-See [artifact index](artifacts/2026-10-29-intent-dd/README.md) for the current interactive iteration flow, the earlier lifecycle exploration and their editable source fragments. The current flow is the preferred discussion aid; the earlier flow is historical.
+See [artifact index](artifacts/2026-10-29-agent-intent/README.md) for the current interactive iteration flow, the earlier lifecycle exploration and their editable source fragments. The current flow is the preferred discussion aid; the earlier flow is historical.
 
 The next product step is to resolve the remaining policy decisions and translate an agreed small slice into proposed Gherkin scenarios. Saving this document does not itself accept new executable intent or authorise implementation.

@@ -1,6 +1,6 @@
 # Agent Intent contributor workflow
 
-Read `.agents/skills/intent-dd/SKILL.md` before changing behaviour or executable specifications.
+Read `.agents/skills/agent-intent/SKILL.md` before changing behaviour or executable specifications.
 
 Develop from the executable requirements in `features/`. Preserve specification meaning,
 assertions and supporting tests. New and changed specifications remain proposals until

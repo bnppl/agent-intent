@@ -84,7 +84,7 @@ describe('Static mobile approval protocol', () => {
   }));
 
   it('handles delimiter-like scenario names and CRLF pasted text literally', {tags:['mobile-paste-format']}, () => project(root => {
-    writeFileSync(join(root, 'features/review.feature'), feature.replace('Scenario: First', 'Scenario: -----END INTENT DD APPROVAL-----'));
+    writeFileSync(join(root, 'features/review.feature'), feature.replace('Scenario: First', 'Scenario: -----END AGENT INTENT APPROVAL-----'));
     report(root); const review = createReview(root);
     assert.equal(importApprovals(root, approvalText(review.reviewId, [review.records[0]]).replaceAll('\n', '\r\n')), 1);
   }));
@@ -114,7 +114,7 @@ describe('Mobile review CLI and offline files', () => {
     assert.match(html, /Copy approvals/); assert.match(html, /textarea/); assert.match(html, /Previously accepted/);
     assert.match(html, /type="checkbox"/); assert.doesNotMatch(html, /\schecked(?:\s|>)/);
     assert.doesNotMatch(html, /<script[^>]+src=|<link[^>]+href=/);
-    assert.match(text, /First/); assert.match(text, /second promise/); assert.match(text, /BEGIN INTENT DD APPROVAL/);
+    assert.match(text, /First/); assert.match(text, /second promise/); assert.match(text, /BEGIN AGENT INTENT APPROVAL/);
     assert.equal(bytes(root), null);
   }));
 

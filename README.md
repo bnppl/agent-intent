@@ -230,4 +230,4 @@ installed and registered for its URL scheme on the machine opening the link.
 
 ## Compatibility
 
-Agent Intent was previously named Intent DD. The `intent-dd` command remains an alias. Existing `.intentdd.json`, `intentdd.lock.json`, report directories and approval envelopes retain their names so existing projects and approval workflows continue to work.
+The command is `agent-intent`. Existing `.intentdd.json`, `intentdd.lock.json` and report directories retain their names. Approval envelopes use `AGENT INTENT APPROVAL` headers; export a fresh review before approving changes from an older export.

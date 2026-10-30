@@ -1,5 +1,5 @@
 ---
-name: intent-dd
+name: agent-intent
 description: Develop from human-owned Gherkin specifications, review test lineage, and apply individual acceptance locally or through pasted mobile decisions.
 ---
 

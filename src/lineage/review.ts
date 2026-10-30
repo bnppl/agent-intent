@@ -13,8 +13,8 @@ export interface ApprovalRecord {
   expectedAcceptance: string | null;
 }
 export interface StaticReview { model: ReportModel; reviewId: string; records: ApprovalRecord[] }
-const begin = '-----BEGIN INTENT DD APPROVAL-----';
-const end = '-----END INTENT DD APPROVAL-----';
+const begin = '-----BEGIN AGENT INTENT APPROVAL-----';
+const end = '-----END AGENT INTENT APPROVAL-----';
 
 /** A review binds the entire report and baseline, including unselected specifications. */
 export function createReview(root: string): StaticReview {

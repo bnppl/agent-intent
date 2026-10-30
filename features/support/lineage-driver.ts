@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const reporter = fileURLToPath(new URL('../../runtime/lineage-reporter.cjs', import.meta.url));
 
 export class LineageDriver {
-  readonly root = mkdtempSync(join(tmpdir(), 'intent-dd-lineage-'));
+  readonly root = mkdtempSync(join(tmpdir(), 'agent-intent-lineage-'));
 
   write(path: string, source: string): void {
     const full = join(this.root, path);

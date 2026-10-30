@@ -18,9 +18,9 @@ function update() {
   summary.textContent = decisions.length ? decisions.length + ' selected: ' + decisions.map(record =>
     record.name + ' (' + record.path + (record.proposed === null ? '; removal' : '; change') + ')').join('; ')
     : 'No approvals selected.';
-  output.value = decisions.length ? '-----BEGIN INTENT DD APPROVAL-----\\n' +
+  output.value = decisions.length ? '-----BEGIN AGENT INTENT APPROVAL-----\\n' +
     JSON.stringify({version: 1, reviewId: review.reviewId, decisions}, null, 2) +
-    '\\n-----END INTENT DD APPROVAL-----' : '';
+    '\\n-----END AGENT INTENT APPROVAL-----' : '';
   copy.disabled = !decisions.length;
   message.textContent = '';
 }

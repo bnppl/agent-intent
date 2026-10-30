@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Intent"
+  short_description: "Build software from protected Gherkin intent"
+  default_prompt: "Use $agent-intent to guide this change from executable Gherkin intent through implementation and human review."

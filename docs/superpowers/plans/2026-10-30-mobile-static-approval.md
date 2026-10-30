@@ -50,7 +50,7 @@ Interfaces: `renderStaticReview(model): { html: string; text: string }`; CLI `re
 
 ### Task 3: Workflow, verification and review
 
-Files: update `README.md`, `AGENTS.md`, `.agents/skills/intent-dd/SKILL.md`, `docs/requirements/README.md`; include generated `runtime/*.cjs`.
+Files: update `README.md`, `AGENTS.md`, `.agents/skills/agent-intent/SKILL.md`, `docs/requirements/README.md`; include generated `runtime/*.cjs`.
 
 - [x] Document mobile file review, exact envelope import, stale rejection and human authorship limitations; correct obsolete local-only approval guidance.
 - [x] Run npm run build and npm test; generate this iteration's review files without accepting them.

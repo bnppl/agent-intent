@@ -92,7 +92,7 @@ ${selection}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agent Intent report</title>
-${options.sessionToken ? `<meta name="intent-dd-token" content="${text(options.sessionToken)}"><meta name="lineage-revision" content="${text(options.revision ?? '')}"><link rel="stylesheet" href="/lineage.css"><script src="/lineage.js" defer></script>` : `<style>${lineageStyles}</style>`}
+${options.sessionToken ? `<meta name="agent-intent-token" content="${text(options.sessionToken)}"><meta name="lineage-revision" content="${text(options.revision ?? '')}"><link rel="stylesheet" href="/lineage.css"><script src="/lineage.js" defer></script>` : `<style>${lineageStyles}</style>`}
 </head>
 <body>
 <header>

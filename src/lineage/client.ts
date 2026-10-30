@@ -1,5 +1,5 @@
 import { regroup } from './grouping.js';
-const token = document.querySelector<HTMLMetaElement>('meta[name="intent-dd-token"]')?.content ?? '';
+const token = document.querySelector<HTMLMetaElement>('meta[name="agent-intent-token"]')?.content ?? '';
 const revision = document.querySelector<HTMLMetaElement>('meta[name="lineage-revision"]')?.content ?? '';
 const message = document.querySelector<HTMLElement>('#lineage-message');
 

@@ -130,7 +130,7 @@ ${le}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agent Intent report</title>
-${e.sessionToken?`<meta name="intent-dd-token" content="${ne(e.sessionToken)}"><meta name="lineage-revision" content="${ne(e.revision??"")}"><link rel="stylesheet" href="/lineage.css"><script src="/lineage.js" defer></script>`:`<style>${Xr}</style>`}
+${e.sessionToken?`<meta name="agent-intent-token" content="${ne(e.sessionToken)}"><meta name="lineage-revision" content="${ne(e.revision??"")}"><link rel="stylesheet" href="/lineage.css"><script src="/lineage.js" defer></script>`:`<style>${Xr}</style>`}
 </head>
 <body>
 <header>

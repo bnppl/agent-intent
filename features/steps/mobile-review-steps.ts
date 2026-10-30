@@ -28,7 +28,7 @@ Then('the static files show the specifications and copyable approval records', f
   const html = readFileSync(join(this.mobile!.root, 'mobile.html'), 'utf8');
   const text = readFileSync(join(this.mobile!.root, 'mobile.txt'), 'utf8');
   assert.match(html, /Copy approvals/); assert.match(html, /First specification/);
-  assert.match(text, /BEGIN INTENT DD APPROVAL/); assert.match(text, /Second specification/);
+  assert.match(text, /BEGIN AGENT INTENT APPROVAL/); assert.match(text, /Second specification/);
 });
 Then('no specifications have been accepted', function (this: MobileWorld) {
   assert.equal(existsSync(join(this.mobile!.root, 'intentdd.lock.json')), false);
@@ -114,12 +114,12 @@ Then('the test run remains failed and verification fails', function(this: Mobile
 });
 When('I approve a delimiter-like scenario name using CRLF text', function(this: MobileWorld) {
   const d = this.mobile!, path = join(d.root, 'features/example.feature');
-  d.write('features/example.feature', readFileSync(path,'utf8').replace('Scenario: First specification','Scenario: -----END INTENT DD APPROVAL-----'));
+  d.write('features/example.feature', readFileSync(path,'utf8').replace('Scenario: First specification','Scenario: -----END AGENT INTENT APPROVAL-----'));
   d.run(); const review = createReview(d.root);
   assert.equal(importApprovals(d.root, approvalText(review.reviewId,[review.records[0]]).replaceAll('\n','\r\n')), 1);
 });
 Then('that exact scenario is accepted', function(this: MobileWorld) {
-  assert.deepEqual(reportModel(this.mobile!.root).accepted.map(s => s.name), ['-----END INTENT DD APPROVAL-----']);
+  assert.deepEqual(reportModel(this.mobile!.root).accepted.map(s => s.name), ['-----END AGENT INTENT APPROVAL-----']);
 });
 When('I export a review with a {string} specification name', function(this: MobileValidationWorld, kind: string) {
   assert.ok(['script-like','dollar-replacement'].includes(kind));

@@ -8,8 +8,7 @@
     "node": ">=24.19.0"
   },
   "bin": {
-    "agent-intent": "runtime/cli.cjs",
-    "intent-dd": "runtime/cli.cjs"
+    "agent-intent": "runtime/cli.cjs"
   },
   "scripts": {
     "build": "node scripts/build.mjs",

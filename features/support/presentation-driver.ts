@@ -47,7 +47,7 @@ describe('Reporting', () => {
       });
     });
     const html = await (await fetch(this.origin + '/lineage')).text();
-    this.token = html.match(/name="intent-dd-token" content="([^"]+)"/)?.[1];
+    this.token = html.match(/name="agent-intent-token" content="([^"]+)"/)?.[1];
   }
 
   async request(path: string, value?: unknown, token?: string, headers: Record<string, string> = {}): Promise<Response> {
