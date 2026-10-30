@@ -6,14 +6,13 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PresentationDriver } from '../features/support/presentation-driver.js';
 
-const tag = { tags: ['specification-lock'] };
 const cliPath = fileURLToPath(new URL('../runtime/cli.cjs', import.meta.url));
 function cli(d: PresentationDriver, command: string) {
   return spawnSync(process.execPath, [cliPath, command], { cwd: d.root, encoding: 'utf8' });
 }
 
 describe('Accepted specification lock workflow', () => {
-  it('serves the report from the project home page in an ordinary folder', tag, async () => {
+  it('serves the report from the project home page in an ordinary folder', { tags: ['report-home'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -24,7 +23,7 @@ describe('Accepted specification lock workflow', () => {
     } finally { await d.stop(); }
   });
 
-  it('updates only the accepted entry in a portable specification lock file', tag, async () => {
+  it('updates only the accepted entry in a portable specification lock file', { tags: ['lock-individual-acceptance'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -39,7 +38,7 @@ describe('Accepted specification lock workflow', () => {
     } finally { await d.stop(); }
   });
 
-  it('checks pending acceptance and failed tests against the lock', tag, async () => {
+  it('checks pending acceptance and failed tests against the lock', { tags: ['lock-verification', 'verification-failures'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -56,7 +55,7 @@ it('breaks the first promise', {tags:['first']}, () => { throw Error('fixture fa
     } finally { await d.stop(); }
   });
 
-  it('refuses to verify a report when its source has since changed', tag, async () => {
+  it('refuses to verify a report when its source has since changed', { tags: ['verification-freshness'] }, async () => {
     const d = new PresentationDriver();
     try {
       await d.acceptInitial();
@@ -68,7 +67,7 @@ it('breaks the first promise', {tags:['first']}, () => { throw Error('fixture fa
     } finally { await d.stop(); }
   });
 
-  it('reads current specification source without requiring a test run', tag, () => {
+  it('reads current specification source without requiring a test run', { tags: ['specification-source'] }, () => {
     const d = new PresentationDriver();
     try {
       d.fixtures();
@@ -81,7 +80,7 @@ it('breaks the first promise', {tags:['first']}, () => { throw Error('fixture fa
 });
 
 describe('Specification lock persistence', () => {
-  it('keeps legacy accepted definitions until individual acceptance creates the lock', tag, async () => {
+  it('preserves accepted definitions when individual acceptance creates the portable lock', { tags: ['lock-baseline-persistence'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -92,13 +91,13 @@ describe('Specification lock persistence', () => {
       assert.equal((await d.accept('Second specification')).status, 200);
       const lock = readFileSync(join(d.root, 'intentdd.lock.json'), 'utf8');
       assert.deepEqual(JSON.parse(lock).scenarios.map((s: {name: string}) => s.name), ['First specification', 'Second specification']);
-      // Once present, the portable lock takes precedence over legacy local state.
+      // Once present, the portable lock is the authoritative acceptance baseline.
       d.write('.intentdd/lineage/accepted.json', JSON.stringify({version: 1, scenarios: []}));
       assert.equal((await d.model()).accepted.length, 2);
     } finally { await d.stop(); }
   });
 
-  it('rejects an invalid lock instead of silently replacing it with legacy acceptance', tag, async () => {
+  it('rejects an invalid portable lock while preserving acceptance data', { tags: ['lock-invalid-state'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -111,7 +110,7 @@ describe('Specification lock persistence', () => {
     } finally { await d.stop(); }
   });
 
-  it('records an accepted removal without changing other accepted entries', tag, async () => {
+  it('records an accepted removal without changing other accepted entries', { tags: ['lock-removal'] }, async () => {
     const d = new PresentationDriver();
     try {
       await d.acceptInitial();
@@ -130,7 +129,7 @@ describe('Specification lock persistence', () => {
 });
 
 describe('Complete test-run outcome', () => {
-  it('rejects a run whose suite teardown failed despite passing unit tests', tag, async () => {
+  it('rejects a run whose suite teardown failed despite passing unit tests', { tags: ['verification-failures'] }, async () => {
     const d = new PresentationDriver();
     try {
       await d.acceptInitial();
@@ -150,7 +149,7 @@ describe('Reporting', () => {
 });
 
 describe('Local acceptance HTTP boundaries', () => {
-  it('rejects cross-origin requests and unexpected hosts', tag, async () => {
+  it('rejects cross-origin requests and unexpected hosts', { tags: ['acceptance-http-boundaries'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -160,7 +159,7 @@ describe('Local acceptance HTTP boundaries', () => {
     } finally { await d.stop(); }
   });
 
-  it('rejects malformed acceptance and non-JSON requests without writing a lock', tag, async () => {
+  it('rejects malformed acceptance and non-JSON requests without writing a lock', { tags: ['acceptance-http-boundaries'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();

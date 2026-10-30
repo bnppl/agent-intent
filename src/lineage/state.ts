@@ -1,7 +1,7 @@
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { sha256 } from '../core/gherkin.js';
-import { hasSymlinkParent, IntentError, object } from '../core/files.js';
+import { hasSymlinkParent, IntentError, object, safePath } from '../core/files.js';
 import { workingScenarios } from './load.js';
 import type { LineageScenario, LineageTest } from './report.js';
 
@@ -51,12 +51,24 @@ export function acceptedScenarios(root: string): StoredScenario[] {
 
 export function saveReport(root: string, snapshot: ReportSnapshot): void { write(root, 'latest', snapshot); }
 
+/** Call only after validating every decision in a human-authorised batch. */
+export function writeAccepted(root: string, scenarios: StoredScenario[]): void {
+  write(root, 'lock', { version: 1, scenarios });
+}
+
+function validTestSource(value: unknown): boolean {
+  if (!object(value) || typeof value.path !== 'string' || typeof value.code !== 'string'
+    || !Number.isSafeInteger(value.line) || Number(value.line) < 1) return false;
+  try { safePath(value.path); return true; } catch { return false; }
+}
+
 export function reportModel(root: string): ReportModel {
   const value = read(root, 'latest');
   if (!object(value) || value.version !== 1 || !Array.isArray(value.scenarios) || !value.scenarios.every(validScenario)
     || (value.runFailed !== undefined && typeof value.runFailed !== 'boolean')
     || !Array.isArray(value.tests) || !value.tests.every(test => object(test) && typeof test.description === 'string'
       && Array.isArray(test.tags) && test.tags.every(tag => typeof tag === 'string')
+      && (test.source === undefined || validTestSource(test.source))
       && (test.status === 'passed' || test.status === 'failed'))) {
     throw new IntentError('Generate a lineage report first: npm run test:lineage');
   }
@@ -75,7 +87,7 @@ export function acceptSpecification(root: string, request: AcceptSpecification):
   if (current?.fingerprint !== candidate?.fingerprint) throw new IntentError('Specification changed since the report; rerun tests');
   const scenarios = model.accepted.filter(scenario => scenario.key !== request.key);
   if (candidate) scenarios.push(candidate);
-  write(root, 'lock', { version: 1, scenarios });
+  writeAccepted(root, scenarios);
 }
 
 /** Test runs never advance acceptance. Verification reads current source and the lock. */

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Intent DD"
+  display_name: "Agent Intent"
   short_description: "Build software from protected Gherkin intent"
   default_prompt: "Use $intent-dd to guide this change from executable Gherkin intent through implementation and human review."

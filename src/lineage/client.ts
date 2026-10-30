@@ -4,7 +4,9 @@ const revision = document.querySelector<HTMLMetaElement>('meta[name="lineage-rev
 const message = document.querySelector<HTMLElement>('#lineage-message');
 
 document.querySelectorAll<HTMLButtonElement>('button[data-accept]').forEach(button => {
-  button.addEventListener('click', async () => {
+  button.addEventListener('click', async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     button.disabled = true;
     if (message) { message.textContent = ''; message.classList.remove('error'); }
     try {
@@ -14,16 +16,28 @@ document.querySelectorAll<HTMLButtonElement>('button[data-accept]').forEach(butt
       const result = await response.json() as { error?: string };
       if (!response.ok) throw Error(result.error ?? 'Acceptance failed. Reload the report and try again.');
       const section = button.closest<HTMLElement>('section');
-      if (section?.dataset.change === 'removed') section.remove();
+      const groups = document.querySelector<HTMLElement>('#scenario-groups');
+      const changesOnly = groups?.hasAttribute('data-changes-only');
+      if (section?.dataset.change === 'removed' || changesOnly) section?.remove();
       else if (section) {
         section.dataset.change = 'unchanged';
         section.querySelector('.badge[class*="change-"]')?.remove();
         section.querySelector('.spec-change')?.remove();
-        button.closest('.review-actions')?.remove();
+        button.textContent = 'Accepted';
+        button.removeAttribute('data-accept');
+        button.removeAttribute('aria-label');
       }
-      const groups = document.querySelector<HTMLElement>('#scenario-groups');
       if (groups) regroup(groups);
-      section?.querySelector('summary')?.focus({ preventScroll: true });
+      const pendingCount = groups?.querySelectorAll('section[data-change]:not([data-change="unchanged"])').length ?? 0;
+      const count = document.querySelector('#pending-count');
+      if (count) count.textContent = String(pendingCount);
+      const empty = document.querySelector<HTMLElement>('#changes-empty');
+      if (empty) empty.hidden = pendingCount > 0;
+      if (section?.isConnected) section.querySelector('summary')?.focus({ preventScroll: true });
+      else {
+        const next = groups?.querySelector<HTMLElement>('button[data-accept]') ?? document.querySelector<HTMLElement>('[aria-current="page"]');
+        next?.focus({ preventScroll: true });
+      }
       if (message) message.textContent = 'This specification change was accepted. Other changes remain for review.';
     } catch (error) {
       button.disabled = false;

@@ -6,11 +6,10 @@ import { renderLineage } from '../src/lineage/report.js';
 import { definitionText } from '../src/lineage/definition.js';
 import { PresentationDriver } from '../features/support/presentation-driver.js';
 
-const tag = { tags: ['lineage-report-presentation'] };
 const scenario = { id: 'spec.feature:3', path: 'spec.feature', name: 'A promise', tags: ['@promise'] };
 
 describe('Report presentation', () => {
-  it('groups failures first and separates change states within each run status', tag, () => {
+  it('groups failures first and separates change states within each run status', { tags: ['report-grouping'] }, () => {
     const definition = JSON.stringify({ contexts: [], scenario: { keyword: 'Scenario', name: 'A promise' } });
     const changed = { ...scenario, id: 'spec.feature:3', key: 'changed', name: 'Changed passing', fingerprint: 'new', definition };
     const unchanged = { ...scenario, id: 'spec.feature:6', key: 'unchanged', name: 'Unchanged failing', tags: ['@failure'], fingerprint: 'same', definition };
@@ -34,14 +33,14 @@ describe('Report presentation', () => {
     assert.match(passed, /data-group-count>2 specifications<\/span>/);
   });
 
-  it('omits empty groups instead of presenting empty status categories', tag, () => {
+  it('omits empty groups instead of presenting empty status categories', { tags: ['report-grouping'] }, () => {
     const html = renderLineage([scenario], [{ description: 'a check', tags: ['promise'] }]).split('<body>')[1];
     assert.match(html, /data-run-group="passed"/);
     assert.match(html, /data-change-group="added"/);
     assert.doesNotMatch(html, /data-run-group="failed"|data-run-group="not-run"|data-change-group="unchanged"/);
   });
 
-  it('retains Examples descriptions when displaying specification changes', tag, () => {
+  it('retains Examples descriptions when displaying specification changes', { tags: ['specification-semantics'] }, () => {
     const definition = { contexts: [], scenario: { keyword: 'Scenario Outline', name: 'A promise',
       examples: [{ keyword: 'Examples', name: 'Inputs', description: 'These inputs are authoritative.',
         tags: [], tableBody: [] }] } };
@@ -50,13 +49,13 @@ describe('Report presentation', () => {
     assert.match(definitionText(JSON.stringify(definition)), /These inputs are illustrative\./);
   });
 
-  it('shows an authored expansion icon with an expanded-state style', tag, () => {
+  it('shows an authored expansion icon with an expanded-state style', { tags: ['report-expansion'] }, () => {
     const html = renderLineage([scenario], [{ description: 'supports the promise', tags: ['promise'] }]);
     assert.match(html, /<svg[^>]*class="expand-icon"/);
     assert.match(html, /details\[open\][^{]*\.expand-icon/);
   });
 
-  it('shows separate result colours and text for passed and failed tests', tag, () => {
+  it('shows separate result colours and text for passed and failed tests', { tags: ['report-results'] }, () => {
     const html = renderLineage([scenario], [
       { description: 'passing example', tags: ['promise'], status: 'passed' },
       { description: 'failing example', tags: ['promise'], status: 'failed' },
@@ -70,7 +69,7 @@ describe('Report presentation', () => {
     assert.match(html, /<section[^>]*data-result="failed"/);
   });
 
-  it('generates failure results without hiding the runner failure', tag, () => {
+  it('generates failure results without hiding the runner failure', { tags: ['report-results'] }, () => {
     const d = new PresentationDriver();
     try {
       d.fixtures();
@@ -82,14 +81,14 @@ it('fails the promise', {tags:['first']}, () => { throw Error('intentional fixtu
     } finally { d.close(); }
   });
 
-  it('keeps unexecuted specifications neutral instead of claiming they passed', tag, () => {
+  it('keeps unexecuted specifications neutral instead of claiming they passed', { tags: ['report-unexecuted'] }, () => {
     assert.match(renderLineage([scenario], []), /data-result="not-run"/);
     assert.match(renderLineage([scenario], []), />Not run<\/span>/);
   });
 });
 
 describe('Individual specification acceptance', () => {
-  it('ignores source-line movement while retaining inherited background changes', tag, async () => {
+  it('ignores source-line movement while retaining inherited background changes', { tags: ['specification-semantics'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures();
@@ -109,7 +108,7 @@ describe('Individual specification acceptance', () => {
     } finally { await d.stop(); }
   });
 
-  it('requires a session token and rejects a stale per-specification acceptance', tag, async () => {
+  it('requires a session token and rejects a stale per-specification acceptance', { tags: ['acceptance-freshness'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -121,7 +120,7 @@ describe('Individual specification acceptance', () => {
     } finally { await d.stop(); }
   });
 
-  it('rejects an older report after a different test run has replaced it', tag, async () => {
+  it('rejects an older report after a different test run has replaced it', { tags: ['acceptance-freshness'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -135,7 +134,7 @@ describe('Individual specification acceptance', () => {
     } finally { await d.stop(); }
   });
 
-  it('shows the accepted and current Gherkin before a change is accepted', tag, async () => {
+  it('shows the accepted and current Gherkin before a change is accepted', { tags: ['report-change-markers'] }, async () => {
     const d = new PresentationDriver();
     try {
       await d.acceptInitial();
@@ -143,12 +142,19 @@ describe('Individual specification acceptance', () => {
         .replace('the first promise', 'a changed first promise'));
       d.run();
       const html = await d.page();
-      assert.match(html, /<pre>[^<]*Given the first promise[^<]*<\/pre>/);
-      assert.match(html, /<pre>[^<]*Given a changed first promise[^<]*<\/pre>/);
+      const sections = [...html.matchAll(/<section\b[^>]*>[\s\S]*?<\/section>/g)].map(match => match[0]);
+      const changed = sections.find(section => section.includes('<h2>First specification</h2>'))!;
+      const unchanged = sections.find(section => section.includes('<h2>Second specification</h2>'))!;
+      assert.match(changed, /data-change="modified"/);
+      assert.match(changed, /class="badge result-passed">Passed<\/span>/);
+      assert.match(changed, /class="badge change-modified">Modified<\/span>/);
+      assert.doesNotMatch(unchanged, /change-modified|data-change="modified"/);
+      assert.match(html.replace(/<\/?span\b[^>]*>/g, ''), /<pre>[^<]*Given the first promise[^<]*<\/pre>/);
+      assert.match(html.replace(/<\/?span\b[^>]*>/g, ''), /<pre>[^<]*Given a changed first promise[^<]*<\/pre>/);
     } finally { await d.stop(); }
   });
 
-  it('accepts only the selected changed specification and persists that baseline', tag, async () => {
+  it('accepts only the selected changed specification and persists that baseline', { tags: ['report-individual-acceptance'] }, async () => {
     const d = new PresentationDriver();
     try {
       await d.acceptInitial();
@@ -166,7 +172,7 @@ describe('Individual specification acceptance', () => {
     } finally { await d.stop(); }
   });
 
-  it('does not advance acceptance when another report is generated', tag, async () => {
+  it('does not advance acceptance when another report is generated', { tags: ['report-baseline'] }, async () => {
     const d = new PresentationDriver();
     try {
       await d.acceptInitial();
@@ -179,7 +185,7 @@ describe('Individual specification acceptance', () => {
     } finally { await d.stop(); }
   });
 
-  it('rejects acceptance of a report after its source has changed', tag, async () => {
+  it('rejects acceptance of a report after its source has changed', { tags: ['acceptance-freshness'] }, async () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
@@ -192,7 +198,7 @@ describe('Individual specification acceptance', () => {
     } finally { await d.stop(); }
   });
 
-  it('marks additions and removals against accepted specifications', tag, async () => {
+  it('marks additions and removals against accepted specifications', { tags: ['report-additions-removals'] }, async () => {
     const d = new PresentationDriver();
     try {
       await d.acceptInitial();
@@ -210,4 +216,15 @@ describe('Individual specification acceptance', () => {
       assert.match(html, /data-change="removed"[\s\S]*?<h2>Second specification<\/h2>/);
     } finally { await d.stop(); }
   });
+});
+
+it('offers acceptance in the collapsed scenario row and marks unchanged scenarios accepted', { tags: ['inline-acceptance'] }, () => {
+  const current = { ...scenario, key: 'promise', fingerprint: 'same', definition: JSON.stringify({ contexts: [], scenario: { keyword: 'Scenario', name: 'A promise' } }) };
+  const html = renderLineage([current], [], { sessionToken: 'token' });
+  const summary = html.match(/<summary>(.*?)<\/summary>/s)?.[1] ?? '';
+  assert.match(summary, /<button[^>]*data-accept="promise"[^>]*>Accept<\/button>/);
+  assert.equal((html.match(/data-accept=/g) ?? []).length, 1);
+  const accepted = renderLineage([current], [], { sessionToken: 'token', accepted: [current] });
+  assert.match(accepted, /<button[^>]*disabled[^>]*>Accepted<\/button>/);
+  assert.doesNotMatch(accepted, /data-accept=/);
 });

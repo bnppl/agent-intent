@@ -41,12 +41,12 @@ describe('HTML reporting', () => {
 `);
   }
 
-  run(files = ['example.test.mjs'], expectedStatus = 0): void {
+  run(files = ['example.test.mjs'], expectedStatus = 0, nodeOptions: string[] = []): void {
     const env = { ...process.env };
     // A nested test command must start its own runner, not reuse the parent's context.
     delete env.NODE_TEST_CONTEXT;
     const result = spawnSync(process.execPath, [
-      '--test', '--test-reporter', reporter,
+      '--enable-source-maps', ...nodeOptions, '--test', '--test-reporter', reporter,
       '--test-reporter-destination', 'lineage.html', ...files,
     ], { cwd: this.root, env, encoding: 'utf8', timeout: 15000 });
     assert.equal(result.error, undefined);

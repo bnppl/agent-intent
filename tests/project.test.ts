@@ -5,10 +5,9 @@ import { join } from 'node:path';
 import { workingScenarios } from '../src/lineage/load.js';
 import { LineageDriver } from '../features/support/lineage-driver.js';
 
-const tag = { tags: ['specification-lock'] };
 
 describe('Project specification discovery', () => {
-  it('rejects roots outside the project and symlinked specifications', tag, () => {
+  it('rejects roots outside the project and symlinked specifications', { tags: ['specification-discovery-safety'] }, () => {
     const d = new LineageDriver();
     try {
       d.scenario('example');
@@ -22,7 +21,7 @@ describe('Project specification discovery', () => {
     } finally { d.close(); }
   });
 
-  it('rejects symlinked configuration and malformed Gherkin', tag, () => {
+  it('rejects symlinked configuration and malformed Gherkin', { tags: ['specification-discovery-safety'] }, () => {
     const d = new LineageDriver();
     try {
       d.scenario('example');
@@ -35,7 +34,7 @@ describe('Project specification discovery', () => {
     } finally { d.close(); }
   });
 
-  it('retains inherited tags, outlines, docstrings and example values in the specification', tag, () => {
+  it('retains inherited tags, outlines, docstrings and example values in the specification', { tags: ['specification-semantics'] }, () => {
     const d = new LineageDriver();
     try {
       d.write('features/example.feature', `@feature-tag

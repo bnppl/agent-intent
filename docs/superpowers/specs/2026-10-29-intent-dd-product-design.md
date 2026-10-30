@@ -1,4 +1,4 @@
-# Intent DD: incremental intent, lineage and mutation evidence
+# Agent Intent: incremental intent, lineage and mutation evidence
 
 Date: 2026-10-29
 
@@ -8,7 +8,7 @@ Status: product direction captured from the design discussion. This is a prose d
 
 Give developers confidence to let an AI agent implement software while humans retain explicit control over required behaviour. Learn the problem domain through small iterations, agreeing each incremental change rather than trying to specify the entire product upfront.
 
-Intent DD must use the same approach for its own development: its accepted executable specifications guide its implementation. TypeScript is the implementation language; Gherkin is the first supported specification format.
+Agent Intent must use the same approach for its own development: its accepted executable specifications guide its implementation. TypeScript is the implementation language; Gherkin is the first supported specification format.
 
 ## Product surfaces
 

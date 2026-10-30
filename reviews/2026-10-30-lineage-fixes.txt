@@ -1,0 +1,1555 @@
+Intent DD — mobile specification review
+Review ID: 3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6
+Review before copying. Copy only the complete approval blocks you authorise.
+You may paste several blocks together as one batch. Unselected changes remain pending.
+Copying does not update acceptance. Hashes are integrity identifiers, not signatures.
+After any acceptance or report/source change, request a fresh review before approving more.
+Test outcomes: RUN FAILED
+
+================================================
+Review a report in an ordinary project folder — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@report-home
+Scenario: Review a report in an ordinary project folder
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  Then the project home page shows the specification report
+Supporting tests:
+FAILED: Accepted specification lock workflow › serves the report from the project home page in an ordinary folder [report-home]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Review a report in an ordinary project folder\"]:0",
+      "name": "Review a report in an ordinary project folder",
+      "path": "features/intent_workflow.feature",
+      "proposed": "0cb2fc525cd25c6c501d52c18e9a48487d0700384b863bfc019f8c8d4801b829",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Accept one specification into the lock file — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-individual-acceptance
+Scenario: Accept one specification into the lock file
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And I accept one specification
+  Then the lock contains only that accepted specification
+  And another test run leaves the lock unchanged
+Supporting tests:
+FAILED: Accepted specification lock workflow › updates only the accepted entry in a portable specification lock file [lock-individual-acceptance]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Accept one specification into the lock file\"]:0",
+      "name": "Accept one specification into the lock file",
+      "path": "features/intent_workflow.feature",
+      "proposed": "12607ecc58ed97bd809c30c6d4117bae6046ca901d9cd837321b1aa5c10a4654",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Verify against accepted specifications — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-verification
+Scenario: Verify against accepted specifications
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  Then verification reports pending specification acceptance
+  When I accept every specification
+  Then verification succeeds against the lock
+Supporting tests:
+FAILED: Accepted specification lock workflow › checks pending acceptance and failed tests against the lock [lock-verification]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Verify against accepted specifications\"]:0",
+      "name": "Verify against accepted specifications",
+      "path": "features/intent_workflow.feature",
+      "proposed": "ee61edfe4d5bd9a6c2379bfc9e53146a2b92a9cee98a4658119dabf43bfd94d6",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject unsafe or invalid specification inputs — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@specification-discovery-safety
+Scenario Outline: Reject unsafe or invalid specification inputs
+  Given a project with specifications and related passing tests
+  When specification discovery encounters "<input>"
+  Then specification discovery fails with an explanation
+
+  Examples: 
+    | input |
+    | a root outside project |
+    | a symlinked feature |
+    | symlinked configuration |
+    | malformed Gherkin |
+Supporting tests:
+PASSED: Project specification discovery › rejects roots outside the project and symlinked specifications [specification-discovery-safety]
+PASSED: Project specification discovery › rejects symlinked configuration and malformed Gherkin [specification-discovery-safety]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Reject unsafe or invalid specification inputs\"]:0",
+      "name": "Reject unsafe or invalid specification inputs",
+      "path": "features/intent_workflow.feature",
+      "proposed": "2d85444888df8099b6e5f744d423ee784854e6d260c7734b5d8695fc58a47791",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Preserve inherited and outline meaning independently of line numbers — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@specification-semantics
+Scenario: Preserve inherited and outline meaning independently of line numbers
+  Given a specification with inherited tags, a background, a docstring and examples
+  When its specification definition is read
+  Then inherited tags, docstrings and example values are preserved
+  And moving its source lines leaves its fingerprint unchanged
+  And changing its background or example value changes its fingerprint
+  And example descriptions remain visible in its readable definition
+Supporting tests:
+PASSED: Report presentation › retains Examples descriptions when displaying specification changes [specification-semantics]
+FAILED: Individual specification acceptance › ignores source-line movement while retaining inherited background changes [specification-semantics]
+PASSED: Project specification discovery › retains inherited tags, outlines, docstrings and example values in the specification [specification-semantics]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Preserve inherited and outline meaning independently of line numbers\"]:0",
+      "name": "Preserve inherited and outline meaning independently of line numbers",
+      "path": "features/intent_workflow.feature",
+      "proposed": "ba3fe6786c9d0d184e7644f77d4767e50b696adf478dad2c2d26f15b6e77e757",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Read current Gherkin without running supporting tests — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@specification-source
+Scenario: Read current Gherkin without running supporting tests
+  Given a project with specifications and related passing tests
+  When I request the current specification source
+  Then both current Gherkin scenarios are printed without creating a report
+Supporting tests:
+PASSED: Accepted specification lock workflow › reads current specification source without requiring a test run [specification-source]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Read current Gherkin without running supporting tests\"]:0",
+      "name": "Read current Gherkin without running supporting tests",
+      "path": "features/intent_workflow.feature",
+      "proposed": "acbde555eea12b37de60ad3c22551f4c9ac5f3fcb141408f86802b14f7fea70d",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject verification after specification source changes — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@verification-freshness
+Scenario: Reject verification after specification source changes
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And its specification source changes without another run
+  Then verification asks for a new test run
+Supporting tests:
+FAILED: Accepted specification lock workflow › refuses to verify a report when its source has since changed [verification-freshness]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Reject verification after specification source changes\"]:0",
+      "name": "Reject verification after specification source changes",
+      "path": "features/intent_workflow.feature",
+      "proposed": "c23a31caceb78f648ed9369294c0f5daf34a36226faf369bed7f2cf65c507987",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Keep test failures separate from specification agreement — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@verification-failures
+Scenario Outline: Keep test failures separate from specification agreement
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And I accept every specification
+  And a new test run has "<failure>"
+  Then verification reports a failed test run
+
+  Examples: 
+    | failure |
+    | a failing test |
+    | failed teardown |
+Supporting tests:
+FAILED: Accepted specification lock workflow › checks pending acceptance and failed tests against the lock [verification-failures]
+FAILED: Complete test-run outcome › rejects a run whose suite teardown failed despite passing unit tests [verification-failures]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Keep test failures separate from specification agreement\"]:0",
+      "name": "Keep test failures separate from specification agreement",
+      "path": "features/intent_workflow.feature",
+      "proposed": "49d6f768eadea45d268ae20c1413bff5defb8615832631b9cd2ad805b96b4534",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Migrate legacy acceptance only on explicit acceptance — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-legacy-migration
+Scenario: Migrate legacy acceptance only on explicit acceptance
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And legacy acceptance contains the first specification
+  Then legacy acceptance is readable without creating a portable lock
+  When I accept the second specification
+  Then the portable lock contains both specifications and takes precedence over legacy state
+Supporting tests:
+FAILED: Specification lock persistence › keeps legacy accepted definitions until individual acceptance creates the lock [lock-legacy-migration]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Migrate legacy acceptance only on explicit acceptance\"]:0",
+      "name": "Migrate legacy acceptance only on explicit acceptance",
+      "path": "features/intent_workflow.feature",
+      "proposed": "230ae5cf574fdf322232302f887b4602db8ba58265f1b41efdd222b6b9c970e0",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject an invalid portable lock instead of using legacy acceptance — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-invalid-state
+Scenario: Reject an invalid portable lock instead of using legacy acceptance
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And legacy acceptance contains the first specification
+  And the portable lock is invalid
+  Then reading acceptance rejects the invalid lock without replacing it
+Supporting tests:
+FAILED: Specification lock persistence › rejects an invalid lock instead of silently replacing it with legacy acceptance [lock-invalid-state]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Reject an invalid portable lock instead of using legacy acceptance\"]:0",
+      "name": "Reject an invalid portable lock instead of using legacy acceptance",
+      "path": "features/intent_workflow.feature",
+      "proposed": "3f7bb80f64545914fa19992e84a8efab4fe127e2312864094895f45a18346a19",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Accept a removed specification without changing the retained entry — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-removal
+Scenario: Accept a removed specification without changing the retained entry
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And I accept every specification
+  And the second specification is removed and tests generate a report
+  And I accept the removed specification
+  Then the lock retains only the unchanged first specification
+  And verification succeeds against the lock
+Supporting tests:
+FAILED: Specification lock persistence › records an accepted removal without changing other accepted entries [lock-removal]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Accept a removed specification without changing the retained entry\"]:0",
+      "name": "Accept a removed specification without changing the retained entry",
+      "path": "features/intent_workflow.feature",
+      "proposed": "2076628157224c6a925397c6af4a5fb40307994cce5604b9e31ecfca617e7092",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject unauthorised or stale local acceptance — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@acceptance-freshness
+Scenario Outline: Reject unauthorised or stale local acceptance
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And a local acceptance request has "<problem>"
+  Then that acceptance request is rejected without changing the lock
+
+  Examples: 
+    | problem |
+    | no session token |
+    | a replaced report |
+    | changed source |
+    | changed acceptance |
+Supporting tests:
+FAILED: Individual specification acceptance › requires a session token and rejects a stale per-specification acceptance [acceptance-freshness]
+FAILED: Individual specification acceptance › rejects an older report after a different test run has replaced it [acceptance-freshness]
+FAILED: Individual specification acceptance › rejects acceptance of a report after its source has changed [acceptance-freshness]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Reject unauthorised or stale local acceptance\"]:0",
+      "name": "Reject unauthorised or stale local acceptance",
+      "path": "features/intent_workflow.feature",
+      "proposed": "6e405b55b4c763965a663036bf8d5fdb83addbbfd7281322dc01e0f2fb2fa48a",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject invalid local HTTP requests without accepting specifications — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@acceptance-http-boundaries
+Scenario Outline: Reject invalid local HTTP requests without accepting specifications
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And a local HTTP request has "<problem>"
+  Then the HTTP request is rejected without creating a lock
+  And report responses restrict scripts to this server and disable caching
+
+  Examples: 
+    | problem |
+    | a foreign origin |
+    | an unexpected host |
+    | cross-site metadata |
+    | malformed acceptance |
+    | a non-JSON body |
+Supporting tests:
+FAILED: Local acceptance HTTP boundaries › rejects cross-origin requests and unexpected hosts [acceptance-http-boundaries]
+FAILED: Local acceptance HTTP boundaries › rejects malformed acceptance and non-JSON requests without writing a lock [acceptance-http-boundaries]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Reject invalid local HTTP requests without accepting specifications\"]:0",
+      "name": "Reject invalid local HTTP requests without accepting specifications",
+      "path": "features/intent_workflow.feature",
+      "proposed": "85478c85a343bd830d1bb568d17ab2b92cea24d8f99625132a8c0aeac6576db8",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Recognise a specification with nested unit tests — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-expansion
+Scenario: Recognise a specification with nested unit tests
+  Given a specification with associated unit-test descriptions
+  When I view the generated report
+  Then the specification has an icon indicating that it can be expanded
+  And its associated unit-test descriptions are inside the expandable section
+  And the icon distinguishes collapsed and expanded states
+Supporting tests:
+PASSED: Report presentation › shows an authored expansion icon with an expanded-state style [report-expansion]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Recognise a specification with nested unit tests\"]:0",
+      "name": "Recognise a specification with nested unit tests",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "b0bcfaf31eefc31f853e8d7070a9a08f0592b430bcd759113260c997af144ccc",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Distinguish passing and failing results — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-results
+Scenario: Distinguish passing and failing results
+  Given a specification with a passing associated unit test
+  And a specification with a failing associated unit test
+  When the tests run with HTML reporting enabled
+  Then the report is generated despite the test failure
+  And the passing result is coloured green and labelled "Passed"
+  And the failing result is coloured red and labelled "Failed"
+  And a specification with a failing associated unit test is labelled "Failed"
+Supporting tests:
+PASSED: Report presentation › shows separate result colours and text for passed and failed tests [report-results]
+PASSED: Report presentation › generates failure results without hiding the runner failure [report-results]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Distinguish passing and failing results\"]:0",
+      "name": "Distinguish passing and failing results",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "b41eb606532492368bc74403f7bfba48a68229f19a5646fa1a7952cdc16f7e13",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Distinguish specification changes from test results — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-change-markers
+Scenario: Distinguish specification changes from test results
+  Given a previously generated report whose specification changes were accepted in the web interface
+  And a specification has changed since that accepted report
+  When a new report is generated
+  Then the changed specification has a coloured "Modified" marker
+  And its test-result colour and label remain visible separately
+  And unchanged specifications have no "Modified" marker
+Supporting tests:
+FAILED: Individual specification acceptance › shows the accepted and current Gherkin before a change is accepted [report-change-markers]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Distinguish specification changes from test results\"]:0",
+      "name": "Distinguish specification changes from test results",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "59d607033743deab5ccd87f4e6f0ff56abb7d42954cb6f9fab66efe02b264bec",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Preserve the accepted comparison baseline — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-baseline
+Scenario: Preserve the accepted comparison baseline
+  Given a previously generated report whose specification changes were accepted in the web interface
+  And a specification has changed since that accepted report
+  When a new report is generated without accepting those changes
+  And another report is generated
+  Then both reports identify the specification as modified since the accepted report
+Supporting tests:
+FAILED: Individual specification acceptance › does not advance acceptance when another report is generated [report-baseline]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Preserve the accepted comparison baseline\"]:0",
+      "name": "Preserve the accepted comparison baseline",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "ab16f5ac01def1c58bbd91c9f9e52d1e4f03b9e68276a14b9aab7870155e5fc3",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Accept specification changes individually — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-individual-acceptance
+Scenario: Accept specification changes individually
+  Given a previously generated report whose specification changes were accepted in the web interface
+  And two specifications have changed since that accepted report
+  When I accept the first specification change in the web interface
+  Then that specification is no longer marked as modified
+  And the second specification remains marked as modified
+Supporting tests:
+FAILED: Individual specification acceptance › accepts only the selected changed specification and persists that baseline [report-individual-acceptance]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Accept specification changes individually\"]:0",
+      "name": "Accept specification changes individually",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "eb88ad8489fa9ca9047a2aae58611310175c128036ad843c92e6b2dde03acc7a",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Identify added and removed specifications — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-additions-removals
+Scenario: Identify added and removed specifications
+  Given a previously generated report whose specification changes were accepted in the web interface
+  And a specification has been added and another has been removed
+  When a new report is generated
+  Then the new specification has a coloured "Added" marker
+  And the removed specification has a coloured "Removed" marker
+Supporting tests:
+FAILED: Individual specification acceptance › marks additions and removals against accepted specifications [report-additions-removals]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Identify added and removed specifications\"]:0",
+      "name": "Identify added and removed specifications",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "d1ab944ce66f1ce3057d050988ebf86f3a9ac8c90886f6abb45953085318bbe2",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Group specifications by run status and change status — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-grouping
+Scenario: Group specifications by run status and change status
+  Given a report with passing, failing and unexecuted specifications
+  When the tests run with HTML reporting enabled
+  Then failed specifications are grouped before passed and unexecuted specifications
+  And each run-status group separates added, changed and unchanged specifications
+  And each group shows its number of specifications
+Supporting tests:
+PASSED: Report presentation › groups failures first and separates change states within each run status [report-grouping]
+PASSED: Report presentation › omits empty groups instead of presenting empty status categories [report-grouping]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Group specifications by run status and change status\"]:0",
+      "name": "Group specifications by run status and change status",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "25a8aa19f9319693a67bf4c855ec7386e3a43b8e3f7ade937ebdee29e0decab7",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Read Gherkin and its supporting tests in the Intent DD report — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@integrated-lineage
+Scenario: Read Gherkin and its supporting tests in the Intent DD report
+  Given a previously generated report whose specification changes were accepted in the web interface
+  When a new report is generated
+  Then the Intent DD report shows the accepted Gherkin alongside its supporting tests
+  And the report identifies shared lineage above the supporting tests
+Supporting tests:
+FAILED: Integrated Intent DD report › keeps accepted Gherkin and linked BDD tests together on the home page [integrated-lineage]
+PASSED: Integrated Intent DD report › includes the same Gherkin and visible lineage in the generated standalone report [integrated-lineage]
+PASSED: Integrated Intent DD report › keeps shared lineage at scenario level and escapes additional tags [integrated-lineage]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Read Gherkin and its supporting tests in the Intent DD report\"]:0",
+      "name": "Read Gherkin and its supporting tests in the Intent DD report",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "0c386cb6d1d6b2144ac1433b4ecc18751eab1aec5f817e0c574229289c602474",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Expand the actual code of a supporting unit test — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@test-code
+Scenario: Expand the actual code of a supporting unit test
+  Given a specification with associated unit-test descriptions
+  When I view the generated report
+  Then each supporting unit test has a collapsed test-code control
+  And the test-code control is an inline icon labelled for accessibility
+  And expanding the control reveals the actual test declaration and assertions
+Supporting tests:
+PASSED: Compact supporting test rows › uses an accessible inline code icon while keeping the source collapsed [test-code]
+FAILED: Supporting unit-test code › captures just the executed test declaration and shows it in a collapsed control [test-code]
+PASSED: Supporting unit-test code › uses declaration locations for helper-defined tests and handles braces inside strings [test-code]
+PASSED: Supporting unit-test code › captures original TypeScript declarations when a loader transforms the test file [test-code]
+PASSED: Supporting unit-test code › does not substitute an enclosing suite when a source location is inside the callback [test-code]
+PASSED: Supporting unit-test code › escapes test code and explains missing source in older reports [test-code]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Expand the actual code of a supporting unit test\"]:0",
+      "name": "Expand the actual code of a supporting unit test",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "01549c919211e59b80e737aaff8e0b7c3fe1638ad71d843b2f5e3b626f727f64",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Show only additional tags beneath supporting tests — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@compact-test-rows
+Scenario: Show only additional tags beneath supporting tests
+  Given a specification with associated unit-test descriptions
+  And its supporting test also has tags "fast" and "smoke"
+  When I view the generated report
+  Then the test displays its additional tags without repeating the scenario lineage
+Supporting tests:
+PASSED: Compact supporting test rows › omits repeated parent tags and empty tag rows while retaining the lineage mapping [compact-test-rows]
+PASSED: Compact supporting test rows › shows each additional tag once without repeating the shared lineage [compact-test-rows]
+PASSED: Compact supporting test rows › renders additional tags safely as text [compact-test-rows]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Show only additional tags beneath supporting tests\"]:0",
+      "name": "Show only additional tags beneath supporting tests",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "f68de6a79fa5c16ea5c74c1d4572e228f443fb613c8b22db9c4078d4c96e40e4",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Read syntax-highlighted test code — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@source-highlighting
+Scenario: Read syntax-highlighted test code
+  Given a specification with associated unit-test descriptions
+  When I view the generated report
+  Then the collapsed test-code view contains syntax highlighting without loading external scripts
+Supporting tests:
+PASSED: Highlighted test source › highlights keywords, strings and comments in spec.mjs [source-highlighting]
+PASSED: Highlighted test source › highlights keywords, strings and comments in spec.ts [source-highlighting]
+PASSED: Highlighted test source › keeps hostile source inert and preserves its text [source-highlighting]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Read syntax-highlighted test code\"]:0",
+      "name": "Read syntax-highlighted test code",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "41a8d79af635c09d09f17246081748fb01cc40eb36d5466e3609ce463b3a6ad8",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Open scenario and test source in the configured IDE — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@editor-links
+Scenario: Open scenario and test source in the configured IDE
+  Given a specification with associated unit-test descriptions
+  When I view the generated report
+  Then the scenario and test source locations link to their lines in VS Code by default
+Supporting tests:
+FAILED: Report source links › links scenarios and test declarations to their VS Code lines by default [editor-links]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Open scenario and test source in the configured IDE\"]:0",
+      "name": "Open scenario and test source in the configured IDE",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "9e0570a9f7a11987af3b03d2cb16beb9d2d424df2953b96970a0e1f4c1c5b4ee",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Read highlighted Gherkin and specification changes — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@gherkin-highlighting
+Scenario: Read highlighted Gherkin and specification changes
+  Given a previously generated report whose specification changes were accepted in the web interface
+  And a specification has changed since that accepted report
+  When a new report is generated
+  Then the Gherkin source and both change previews are syntax-highlighted
+Supporting tests:
+PASSED: Highlighted Gherkin specifications › highlights scenario source and both sides of a specification change [gherkin-highlighting]
+PASSED: Highlighted Gherkin specifications › keeps HTML-like Gherkin text inert [gherkin-highlighting]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Read highlighted Gherkin and specification changes\"]:0",
+      "name": "Read highlighted Gherkin and specification changes",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "c5dfdcf9a8f46da192fd89736752f7e1198fc948b1a29f3291b7ea0a61c0d572",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Show unexecuted specifications without claiming success — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-unexecuted
+Scenario: Show unexecuted specifications without claiming success
+  Given a specification with no associated executed tests
+  When I view the generated report
+  Then that specification is labelled "Not run"
+Supporting tests:
+PASSED: Report presentation › keeps unexecuted specifications neutral instead of claiming they passed [report-unexecuted]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Show unexecuted specifications without claiming success\"]:0",
+      "name": "Show unexecuted specifications without claiming success",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "a27bc301c77be6c3db463109609e4749956d6876023c1a5b3a22361d14a634f0",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Use a configured IDE template with escaped source paths — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@editor-custom-template
+Scenario: Use a configured IDE template with escaped source paths
+  Given a specification with associated unit-test descriptions
+  And a configured IDE template and a test path containing spaces and a hash
+  When I view the generated report
+  Then local and standalone source links use the configured template and escaped path
+Supporting tests:
+FAILED: Report source links › uses the configured IDE template and safely encodes source paths [editor-custom-template]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Use a configured IDE template with escaped source paths\"]:0",
+      "name": "Use a configured IDE template with escaped source paths",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "79d4605da9c2502bfbe596e3d38d4160e865c6e6a9d94757006d4735491bd640",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject invalid IDE configuration — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@editor-template-validation
+Scenario Outline: Reject invalid IDE configuration
+  Given a specification with associated unit-test descriptions
+  And the IDE template is <template>
+  When I request the report with that configuration
+  Then the report rejects the invalid IDE template
+
+  Examples: 
+    | template |
+    | javascript:alert(1) |
+    | data:text/html,{path} |
+    | vscode://file/{unknown} |
+    | a non-string value |
+Supporting tests:
+FAILED: Report source links › rejects executable or incomplete IDE templates [editor-template-validation]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Reject invalid IDE configuration\"]:0",
+      "name": "Reject invalid IDE configuration",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "2c89b9e68ff6c2d96937c37b129f61bc38a42a7c9c62c8d823e80b45dd737d11",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Accept a specification from its collapsed report row — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@inline-acceptance
+Scenario: Accept a specification from its collapsed report row
+  Given a specification with associated unit-test descriptions
+  When I view the generated report
+  Then the collapsed scenario row contains its acceptance button
+Supporting tests:
+PASSED: offers acceptance in the collapsed scenario row and marks unchanged scenarios accepted [inline-acceptance]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Accept a specification from its collapsed report row\"]:0",
+      "name": "Accept a specification from its collapsed report row",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "452e6c7ed77a396024fd7748e8f6fe09e30f39744dc75e215ad75d10d9aa465e",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Export a review without accepting any specifications — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-export
+Scenario: Export a review without accepting any specifications
+  Given a mobile review project with two proposed specifications
+  When I export the mobile review files
+  Then the static files show the specifications and copyable approval records
+  And no specifications have been accepted
+Supporting tests:
+PASSED: Mobile review CLI and offline files › exports self-contained selectable HTML and text without accepting anything [mobile-export]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Export a review without accepting any specifications\"]:0",
+      "name": "Export a review without accepting any specifications",
+      "path": "features/mobile_review.feature",
+      "proposed": "07a2b9710c13eb7698eda5265651e3023cabca8d1f80893e21bbc78ce879283c",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Apply only the developer's pasted selection — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-selection
+Scenario: Apply only the developer's pasted selection
+  Given a mobile review project with two proposed specifications
+  When I paste an approval for the first specification
+  Then only the first specification is accepted
+Supporting tests:
+PASSED: Static mobile approval protocol › accepts only selected definitions and rejects replay [mobile-selection]
+PASSED: Mobile review CLI and offline files › imports an exact pasted envelope from stdin and from a file [mobile-selection]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Apply only the developer's pasted selection\"]:0",
+      "name": "Apply only the developer's pasted selection",
+      "path": "features/mobile_review.feature",
+      "proposed": "f3e7cdd7e2acf4e63fd3f8155326f0ed59bfe8296512ff09838ae922ba97a011",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject approval after an unselected specification changes — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-stale-source
+Scenario: Reject approval after an unselected specification changes
+  Given a mobile review project with two proposed specifications
+  And a copied approval for the first specification
+  When the second specification changes after review
+  Then importing the copied approval fails without accepting any specifications
+Supporting tests:
+PASSED: Static mobile approval protocol › rejects a stale unselected-source without writing acceptance [mobile-stale-source]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Reject approval after an unselected specification changes\"]:0",
+      "name": "Reject approval after an unselected specification changes",
+      "path": "features/mobile_review.feature",
+      "proposed": "94b1f8935f3734d3c446ca9dafd85b3cd54b173afc8c92e35dc351f6e05b2247",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject an invalid approval batch atomically — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-invalid-approval
+Scenario Outline: Reject an invalid approval batch atomically
+  Given a mobile review project with two proposed specifications
+  When a pasted approval batch is "<problem>"
+  Then importing that batch fails without changing acceptance
+
+  Examples: 
+    | problem |
+    | empty |
+    | duplicate |
+    | unknown |
+    | tampered |
+    | malformed |
+    | extra-field |
+    | wrong-version |
+    | mixed-review |
+Supporting tests:
+PASSED: Static mobile approval protocol › rejects empty batches without changing any lock bytes [mobile-invalid-approval]
+PASSED: Static mobile approval protocol › rejects duplicate batches without changing any lock bytes [mobile-invalid-approval]
+PASSED: Static mobile approval protocol › rejects unknown batches without changing any lock bytes [mobile-invalid-approval]
+PASSED: Static mobile approval protocol › rejects tampered batches without changing any lock bytes [mobile-invalid-approval]
+PASSED: Static mobile approval protocol › rejects malformed batches without changing any lock bytes [mobile-invalid-approval]
+PASSED: Static mobile approval protocol › rejects extra-field batches without changing any lock bytes [mobile-invalid-approval]
+PASSED: Static mobile approval protocol › rejects wrong-version batches without changing any lock bytes [mobile-invalid-approval]
+PASSED: Static mobile approval protocol › rejects mixed-review batches without changing any lock bytes [mobile-invalid-approval]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Reject an invalid approval batch atomically\"]:0",
+      "name": "Reject an invalid approval batch atomically",
+      "path": "features/mobile_review.feature",
+      "proposed": "dc9a7cec0db468f790522b1fed6e5d08c12b0d18df500ae339443f044977779e",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject approvals from an outdated review — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-stale-review
+Scenario Outline: Reject approvals from an outdated review
+  Given a mobile review project with two proposed specifications
+  And a copied approval for the first specification
+  When the mobile review becomes stale through "<change>"
+  Then importing that batch fails without changing acceptance
+
+  Examples: 
+    | change |
+    | source |
+    | report |
+    | baseline |
+    | replay |
+Supporting tests:
+PASSED: Static mobile approval protocol › accepts only selected definitions and rejects replay [mobile-stale-review]
+PASSED: Static mobile approval protocol › rejects a stale source without writing acceptance [mobile-stale-review]
+PASSED: Static mobile approval protocol › rejects a stale report without writing acceptance [mobile-stale-review]
+PASSED: Static mobile approval protocol › rejects a stale baseline without writing acceptance [mobile-stale-review]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Reject approvals from an outdated review\"]:0",
+      "name": "Reject approvals from an outdated review",
+      "path": "features/mobile_review.feature",
+      "proposed": "ab650918040d88d21d2eddabac06fb194eaa208c721894cc0cc4a7409842e4e3",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Batch individual approvals and explicitly approve a removal — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-removal
+Scenario: Batch individual approvals and explicitly approve a removal
+  Given a mobile review project with two proposed specifications
+  When I import separate approval blocks for both specifications
+  And the second mobile specification is removed and reported
+  And I import its removal approval
+  Then only the first specification is accepted
+Supporting tests:
+PASSED: Static mobile approval protocol › batches separate copied records and explicitly accepts removals [mobile-removal]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Batch individual approvals and explicitly approve a removal\"]:0",
+      "name": "Batch individual approvals and explicitly approve a removal",
+      "path": "features/mobile_review.feature",
+      "proposed": "33d7f15edec1fcb87ef53f11cba15371aa5950747888164b0de02cad35a6f081",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Specification agreement does not clear a failed test outcome — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-failed-run
+Scenario: Specification agreement does not clear a failed test outcome
+  Given a mobile review project with two proposed specifications
+  When the reported test run has failed
+  And I import separate approval blocks for both specifications
+  Then the test run remains failed and verification fails
+Supporting tests:
+PASSED: Static mobile approval protocol › records specification agreement independently of failing run outcomes [mobile-failed-run]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Specification agreement does not clear a failed test outcome\"]:0",
+      "name": "Specification agreement does not clear a failed test outcome",
+      "path": "features/mobile_review.feature",
+      "proposed": "387dbcf992fd1057db535d05ae1b760f03bf12823dd7ca3aa9af5c5acd52d430",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Preserve delimiter-like names in CRLF approval text — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-paste-format
+Scenario: Preserve delimiter-like names in CRLF approval text
+  Given a mobile review project with two proposed specifications
+  When I approve a delimiter-like scenario name using CRLF text
+  Then that exact scenario is accepted
+Supporting tests:
+PASSED: Static mobile approval protocol › handles delimiter-like scenario names and CRLF pasted text literally [mobile-paste-format]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Preserve delimiter-like names in CRLF approval text\"]:0",
+      "name": "Preserve delimiter-like names in CRLF approval text",
+      "path": "features/mobile_review.feature",
+      "proposed": "aa3d6e8f78dabb6a434b508a81f1a96385a7f0f0ffde89865400ac40a43efd95",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Preserve unusual specification names as inert review content — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-inert-content
+Scenario Outline: Preserve unusual specification names as inert review content
+  Given a mobile review project with two proposed specifications
+  When I export a review with a "<kind>" specification name
+  Then embedded review records preserve the original name as inert text
+
+  Examples: 
+    | kind |
+    | script-like |
+    | dollar-replacement |
+Supporting tests:
+PASSED: Mobile review CLI and offline files › preserves dollar replacement sequences literally in embedded decisions [mobile-inert-content]
+PASSED: Mobile review CLI and offline files › keeps hostile specification text inert in HTML and embedded review data [mobile-inert-content]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Preserve unusual specification names as inert review content\"]:0",
+      "name": "Preserve unusual specification names as inert review content",
+      "path": "features/mobile_review.feature",
+      "proposed": "b1817e51efb506c1756e50c39cdf3afb01f5b94cf1be9d9d2600450a3f274e81",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Prepare only selected approvals and clear restored selections — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-copy-selection
+Scenario: Prepare only selected approvals and clear restored selections
+  Given a mobile review project with two proposed specifications
+  When I select the first change in the exported review and copy approvals
+  Then the copied text contains only the first approval and acceptance is unchanged
+  When I clear the exported selection
+  Then the approval text is empty and copying is disabled
+  When a page is restored after selecting a change
+  Then the approval text is empty and copying is disabled
+Supporting tests:
+PASSED: Exported mobile selection events › copies only the selected records, clears selection and resets restored pages without accepting [mobile-copy-selection]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Prepare only selected approvals and clear restored selections\"]:0",
+      "name": "Prepare only selected approvals and clear restored selections",
+      "path": "features/mobile_review.feature",
+      "proposed": "98785becf4dbc981be9986082a820b964af45cca76497094266fd204fe949e41",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Offer manual copying when clipboard access is unavailable — features/mobile_review.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specification changes from a phone without a local server
+  A developer reviews static files and pastes only the decisions they authorise.
+  Preparing approval text never changes the accepted specification lock.
+@mobile-copy-fallback
+Scenario Outline: Offer manual copying when clipboard access is unavailable
+  Given a mobile review project with two proposed specifications
+  When I copy a selected exported approval with clipboard access "<access>"
+  Then the exact selected approval text is selected for manual copying
+  And no specifications have been accepted
+
+  Examples: 
+    | access |
+    | missing |
+    | denied |
+Supporting tests:
+PASSED: Exported mobile selection events › selects the exact current approval text when clipboard access is missing [mobile-copy-fallback]
+PASSED: Exported mobile selection events › selects the exact current approval text when clipboard access is denied [mobile-copy-fallback]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "3829d099d1da69cb775b4a393563152150f03c6b20f116c08e0836428c0401a6",
+  "decisions": [
+    {
+      "key": "[\"features/mobile_review.feature\",\"Offer manual copying when clipboard access is unavailable\"]:0",
+      "name": "Offer manual copying when clipboard access is unavailable",
+      "path": "features/mobile_review.feature",
+      "proposed": "3cbf7e1163a2a7233f0a766be5f248c2cc34dec0c1451d140c055bed4b234f58",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+

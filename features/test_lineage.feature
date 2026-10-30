@@ -1,7 +1,6 @@
 Feature: Navigate from Gherkin scenarios to related unit tests
 
   @test-lineage
-  @intent
   Scenario: List unit tests associated with a Gherkin scenario
     Given a Gherkin scenario tagged "test-lineage"
     And BDD-style unit tests with the same lineage tag

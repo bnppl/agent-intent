@@ -13,5 +13,13 @@ export function config(root: string): Config {
   if (!object(value) || value.version !== 1 || !Array.isArray(value.feature_roots) || !value.feature_roots.length) {
     throw new IntentError('Invalid .intentdd.json: version 1 and nonempty feature_roots required');
   }
-  return { version: 1, feature_roots: [...new Set(value.feature_roots.map(safePath))] };
+  const template = value.editor_url_template;
+  if (template !== undefined && (typeof template !== 'string'
+    || !/^[a-z][a-z0-9+.-]*:\/\//i.test(template) || /^(javascript|data|vbscript):/i.test(template)
+    || /[\x00-\x20]/.test(template) || !/\{(?:path|encodedPath)\}/.test(template)
+    || !template.includes('{line}') || /[{}]/.test(template.replace(/\{(?:path|encodedPath|line|column)\}/g, '')))) {
+    throw new IntentError('Invalid editor_url_template: use an IDE URL with {path} or {encodedPath} and {line}');
+  }
+  return { version: 1, feature_roots: [...new Set(value.feature_roots.map(safePath))],
+    ...(typeof template === 'string' ? {editor_url_template: template} : {}) };
 }

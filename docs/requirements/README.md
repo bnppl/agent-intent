@@ -24,9 +24,16 @@ it again to collapse them. The native disclosure control also works with the
 keyboard. A scenario with no matching tests explains that none ran with a
 matching lineage ID.
 
-## Future features
+## Test code
 
-- Expand a test description to show its logic.
+Each supporting unit test includes a collapsed inline **`</>`** control with the accessible label **View test code**. Expanding
+it reveals the actual test declaration and assertions captured from source during
+the test run, plus the file and line. The same code appears in local, standalone
+and mobile reports. Source is escaped as text and never executed by the browser.
+Older reports and unavailable source display an explanation while preserving
+results. Source maps retain original TypeScript declarations when using loaders.
+The view shows the declaration, including helper references, rather than inlining
+shared helpers or suite setup.
 
 ## Presentation and individual acceptance
 
@@ -57,8 +64,8 @@ Accepted definitions and fingerprints live in the portable `intentdd.lock.json`.
 The latest generated report stays in `.intentdd/lineage/latest.json`.
 Regenerating a report never accepts changes. Existing local acceptance state is
 read until individual human acceptance creates the lock; the lock then takes
-precedence. Standalone HTML remains readable, but acceptance requires the local
-web interface. Scenario renames appear as a removal and addition; duplicate
+precedence. Standalone HTML remains readable. Mobile review exports additionally support
+copying explicit approval records for deterministic import. Scenario renames appear as a removal and addition; duplicate
 names are matched in declaration order.
 
 ## Accepted specification workflow
@@ -72,11 +79,30 @@ part of this workflow.
 
 ## Unified specification and test report
 
-The Intent DD home page incorporates the test report. Expand a scenario to read
-its Gherkin followed by the supporting BDD unit-test descriptions. Each test row
-shows its matching lineage ID; unrelated test tags do not appear as connections.
+The Agent Intent home page incorporates the test report. Expand a scenario to read
+its Gherkin followed by the supporting BDD unit-test descriptions. Shared lineage IDs appear once at scenario level. Compact test rows omit those
+parent tags and display any additional tags once; the lineage mapping is retained
+without repeated labels.
 Accepted specifications retain their Gherkin source in this view. The generated
 standalone report presents the same information.
 
 For example, `@test-lineage` on a scenario links to
 `it('description', { tags: ['test-lineage'] }, fn)` in the unit tests.
+
+## Offline mobile review
+
+[mobile_review.feature](../../features/mobile_review.feature) defines static review
+generation, selective pasted approval and rejection after unselected source changes.
+`review --output PREFIX` exports HTML plus a plain-text companion without accepting
+anything. Review records bind the complete report and accepted baseline, and identify
+each exact proposed definition or removal. HTML selection starts empty; copying text
+prepares a response only. The companion supports copying individual complete envelopes
+when scripts are unavailable.
+
+`approve` reads exact user-authorised envelopes from stdin or `--file PATH`. All
+selected records are validated before one atomic lock update. Empty, duplicate,
+malformed, altered, unknown and stale decisions fail without partial acceptance.
+Unselected definitions and test outcomes remain unchanged. The protocol provides
+content integrity and freshness, not independent human authentication. Agent-generated
+approvals and approvals inferred from files or examples are forbidden. Specification
+acceptance does not authorise commits or approve implementation changes.
