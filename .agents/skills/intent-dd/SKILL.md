@@ -3,7 +3,7 @@ name: intent-dd
 description: Develop from human-owned Gherkin specifications, review test lineage, and apply individual acceptance locally or through pasted mobile decisions.
 ---
 
-# Intent DD
+# Agent Intent
 
 Work in small iterations from executable examples. The human owns specification meaning.
 

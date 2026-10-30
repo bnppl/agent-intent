@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { editorOptions } from './core/editor.js';
 import { resolve } from 'node:path';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { IntentError } from './core/files.js';
@@ -19,7 +20,7 @@ async function main(argv: string[]): Promise<number> {
       const value = argv[++i]; if (!value || value.startsWith('--')) throw new IntentError(arg + ' requires a path');
       if (arg === '--output') output = value; else inputFile = value;
     }
-    else if (arg === '--help' || arg === '-h') { console.log('Intent DD\nUsage: intent-dd [--root PATH] <serve [--port PORT] | verify | status | spec | review [--output PREFIX] | approve [--file PATH]>\nReview writes PREFIX.html and PREFIX.txt (default: intentdd-review). Approve reads exact approval envelopes from a file or stdin.'); return 0; }
+    else if (arg === '--help' || arg === '-h') { console.log('Agent Intent\nUsage: agent-intent [--root PATH] <serve [--port PORT] | verify | status | spec | review [--output PREFIX] | approve [--file PATH]>\nReview writes PREFIX.html and PREFIX.txt (default: intentdd-review). Approve reads exact approval envelopes from a file or stdin.'); return 0; }
     else if (!command && ['serve', 'verify', 'status', 'spec', 'review', 'approve'].includes(arg)) command = arg;
     else throw new IntentError('Unknown argument: ' + arg);
   }
@@ -28,7 +29,7 @@ async function main(argv: string[]): Promise<number> {
   if (inputFile !== undefined && command !== 'approve') throw new IntentError('--file is only valid with approve');
   root = resolve(root);
   if (command === 'review') {
-    const files = renderStaticReview(createReview(root)), prefix = resolve(output ?? 'intentdd-review');
+    const files = renderStaticReview(createReview(root), editorOptions(root)), prefix = resolve(output ?? 'intentdd-review');
     writeFileSync(prefix + '.html', files.html, { flag: 'wx' });
     writeFileSync(prefix + '.txt', files.text, { flag: 'wx' });
     console.log('Review files: ' + prefix + '.html and ' + prefix + '.txt. No specifications accepted.');
@@ -40,7 +41,7 @@ async function main(argv: string[]): Promise<number> {
   else if (command === 'status') console.log(JSON.stringify(reportModel(root), null, 2));
   else if (command === 'verify') {
     verifyReport(root);
-    console.log('Intent DD: report specifications match the accepted lock and no tests failed.');
+    console.log('Agent Intent: report specifications match the accepted lock and no tests failed.');
   } else {
     console.log('# Project specifications\n');
     for (const scenario of workingScenarios(root)) console.log('## ' + scenario.path + '\n\n' + definitionText(scenario.definition) + '\n');
@@ -48,5 +49,5 @@ async function main(argv: string[]): Promise<number> {
   return 0;
 }
 void main(process.argv.slice(2)).then(code => { process.exitCode = code; }).catch((error: unknown) => {
-  console.error('Intent DD: ' + (error instanceof Error ? error.message : String(error))); process.exitCode = 1;
+  console.error('Agent Intent: ' + (error instanceof Error ? error.message : String(error))); process.exitCode = 1;
 });

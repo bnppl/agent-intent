@@ -1,5 +1,5 @@
 {
-  "name": "intent-dd",
+  "name": "agent-intent",
   "version": "0.2.0",
   "private": true,
   "description": "Gherkin specifications, BDD test lineage, and individual specification acceptance",
@@ -8,6 +8,7 @@
     "node": ">=24.19.0"
   },
   "bin": {
+    "agent-intent": "runtime/cli.cjs",
     "intent-dd": "runtime/cli.cjs"
   },
   "scripts": {
@@ -18,11 +19,14 @@
     "intent": "node runtime/cli.cjs",
     "test:acceptance": "node --import tsx node_modules/@cucumber/cucumber/bin/cucumber.js",
     "test:unit": "node --import tsx --test tests/*.test.ts",
-    "test:lineage": "node --import tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./runtime/lineage-reporter.cjs --test-reporter-destination=test-lineage.html tests/*.test.ts",
-    "test": "npm run typecheck && npm run build:check && npm run test:acceptance && npm run test:unit"
+    "test:lineage": "node --enable-source-maps --import tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./runtime/lineage-reporter.cjs --test-reporter-destination=test-lineage.html tests/*.test.ts",
+    "test": "npm run typecheck && npm run build:check && npm run test:acceptance && npm run test:unit",
+    "stop": "node --import tsx scripts/stop.ts"
   },
   "dependencies": {
-    "@cucumber/gherkin": "42.0.1"
+    "@babel/parser": "8.0.10",
+    "@cucumber/gherkin": "42.0.1",
+    "highlight.js": "11.12.0"
   },
   "devDependencies": {
     "@cucumber/cucumber": "13.3.0",

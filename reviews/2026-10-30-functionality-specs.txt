@@ -1,0 +1,244 @@
+Intent DD — mobile specification review
+Review ID: 88c00220c3d65fd59c03e6dcca2ed9d1fb86b8ae7f51b601b5fa05dad8f66f47
+Review before copying. Copy only the complete approval blocks you authorise.
+You may paste several blocks together as one batch. Unselected changes remain pending.
+Copying does not update acceptance. Hashes are integrity identifiers, not signatures.
+After any acceptance or report/source change, request a fresh review before approving more.
+Test outcomes: No run-level failure recorded; inspect individual results below.
+
+================================================
+Preserve accepted specifications when creating a portable lock — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-baseline-persistence
+Scenario: Preserve accepted specifications when creating a portable lock
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And a local acceptance baseline contains the first specification
+  Then the accepted specification is readable without creating a portable lock
+  When I accept the second specification
+  Then the portable lock contains both specifications and is the authoritative acceptance baseline
+Supporting tests:
+PASSED: Specification lock persistence › preserves accepted definitions when individual acceptance creates the portable lock [lock-baseline-persistence]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "88c00220c3d65fd59c03e6dcca2ed9d1fb86b8ae7f51b601b5fa05dad8f66f47",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Preserve accepted specifications when creating a portable lock\"]:0",
+      "name": "Preserve accepted specifications when creating a portable lock",
+      "path": "features/intent_workflow.feature",
+      "proposed": "525d7420a13bd5f3dd416bccd2b1ebdf5253aff55fc3c3d01a139e0341e2c0c8",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject an invalid portable lock while preserving acceptance data — features/intent_workflow.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-invalid-state
+Scenario: Reject an invalid portable lock while preserving acceptance data
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And a local acceptance baseline contains the first specification
+  And the portable lock is invalid
+  Then reading acceptance rejects the invalid lock without replacing it
+Supporting tests:
+PASSED: Specification lock persistence › rejects an invalid portable lock while preserving acceptance data [lock-invalid-state]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "88c00220c3d65fd59c03e6dcca2ed9d1fb86b8ae7f51b601b5fa05dad8f66f47",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Reject an invalid portable lock while preserving acceptance data\"]:0",
+      "name": "Reject an invalid portable lock while preserving acceptance data",
+      "path": "features/intent_workflow.feature",
+      "proposed": "7f8b18b298f3091317e4845f68c00b8d0eabe83415044e480e923c081d1b6e9f",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Navigate specifications, changes and workflow guidance — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-workbench-tabs
+Scenario: Navigate specifications, changes and workflow guidance
+  Given a previously generated report whose specification changes were accepted in the web interface
+  And a specification has changed since that accepted report
+  When a new report is generated
+  Then the report links to specifications, pending changes and workflow guidance
+  And the changes view contains only specifications awaiting acceptance
+  And the workflow view explains reporting, individual acceptance, verification and mobile review
+Supporting tests:
+PASSED: navigates pending changes without mutating acceptance and handles an empty review [report-workbench-tabs]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "88c00220c3d65fd59c03e6dcca2ed9d1fb86b8ae7f51b601b5fa05dad8f66f47",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Navigate specifications, changes and workflow guidance\"]:0",
+      "name": "Navigate specifications, changes and workflow guidance",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "c39234fac30213b469a97d14056c9d8a3447bb4cddacf9b9d443b035669c1bd7",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+List unit tests associated with a Gherkin scenario — features/test_lineage.feature
+Change: MODIFIED
+Previously accepted:
+Feature: Navigate from Gherkin scenarios to related unit tests
+@test-lineage @intent
+Scenario: List unit tests associated with a Gherkin scenario
+  Given a Gherkin scenario tagged "test-lineage"
+  And BDD-style unit tests with the same lineage tag
+  When the tests run successfully with HTML reporting enabled
+  Then an HTML interface is generated
+  And the scenario can be expanded to show its associated unit-test descriptions
+  And the scenario lists the associated unit tests' BDD descriptions
+Proposed:
+Feature: Navigate from Gherkin scenarios to related unit tests
+@test-lineage
+Scenario: List unit tests associated with a Gherkin scenario
+  Given a Gherkin scenario tagged "test-lineage"
+  And BDD-style unit tests with the same lineage tag
+  When the tests run successfully with HTML reporting enabled
+  Then an HTML interface is generated
+  And the scenario can be expanded to show its associated unit-test descriptions
+  And the scenario lists the associated unit tests' BDD descriptions
+Supporting tests:
+PASSED: Lineage descriptions › reveals related descriptions through a collapsed scenario control [test-lineage]
+PASSED: Lineage descriptions › explains when a scenario has no associated tests in the run [test-lineage]
+PASSED: Lineage descriptions › lists only tests with an exact matching lineage ID [test-lineage]
+PASSED: Lineage descriptions › keeps each scenario associated with its own tests [test-lineage]
+PASSED: Lineage descriptions › lists a test once per scenario when several tags match [test-lineage]
+PASSED: Lineage descriptions › renders scenario and test descriptions as text [test-lineage]
+PASSED: Lineage reporter test runs › retains nested BDD descriptions across concurrent suites and files [test-lineage]
+PASSED: Lineage reporter test runs › lists tests that actually ran rather than skipped tests or suite containers [test-lineage]
+PASSED: Lineage reporter test runs › retains the enclosing suite when a helper declares a test [test-lineage]
+PASSED: Lineage reporter test runs › keeps shared helper descriptions separate across test workers [test-lineage]
+PASSED: Lineage reporter test runs › reads configured feature roots including nested feature files [test-lineage]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "88c00220c3d65fd59c03e6dcca2ed9d1fb86b8ae7f51b601b5fa05dad8f66f47",
+  "decisions": [
+    {
+      "key": "[\"features/test_lineage.feature\",\"List unit tests associated with a Gherkin scenario\"]:0",
+      "name": "List unit tests associated with a Gherkin scenario",
+      "path": "features/test_lineage.feature",
+      "proposed": "0fe1603c5bc79a6ddf155e10fb5094f6dbc5ad668bbb29c915da073fd09f3ca6",
+      "expectedAcceptance": "f7412214d1f9196be9a397efc0a0168eeab80ff6f798288719da4366906fc628"
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Migrate legacy acceptance only on explicit acceptance — features/intent_workflow.feature
+Change: REMOVED
+Previously accepted:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-legacy-migration
+Scenario: Migrate legacy acceptance only on explicit acceptance
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And legacy acceptance contains the first specification
+  Then legacy acceptance is readable without creating a portable lock
+  When I accept the second specification
+  Then the portable lock contains both specifications and takes precedence over legacy state
+Proposed:
+(removed)
+Supporting tests:
+Not run: no associated unit tests ran with a matching lineage ID.
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION REMOVAL:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "88c00220c3d65fd59c03e6dcca2ed9d1fb86b8ae7f51b601b5fa05dad8f66f47",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Migrate legacy acceptance only on explicit acceptance\"]:0",
+      "name": "Migrate legacy acceptance only on explicit acceptance",
+      "path": "features/intent_workflow.feature",
+      "proposed": null,
+      "expectedAcceptance": "230ae5cf574fdf322232302f887b4602db8ba58265f1b41efdd222b6b9c970e0"
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
+================================================
+Reject an invalid portable lock instead of using legacy acceptance — features/intent_workflow.feature
+Change: REMOVED
+Previously accepted:
+Feature: Review specifications against an accepted lock
+  Every Gherkin scenario is a specification. Acceptance belongs to each
+  specification and persists separately from test execution results.
+@lock-invalid-state
+Scenario: Reject an invalid portable lock instead of using legacy acceptance
+  Given a project with specifications and related passing tests
+  When its tests generate a report
+  And legacy acceptance contains the first specification
+  And the portable lock is invalid
+  Then reading acceptance rejects the invalid lock without replacing it
+Proposed:
+(removed)
+Supporting tests:
+Not run: no associated unit tests ran with a matching lineage ID.
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION REMOVAL:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "88c00220c3d65fd59c03e6dcca2ed9d1fb86b8ae7f51b601b5fa05dad8f66f47",
+  "decisions": [
+    {
+      "key": "[\"features/intent_workflow.feature\",\"Reject an invalid portable lock instead of using legacy acceptance\"]:0",
+      "name": "Reject an invalid portable lock instead of using legacy acceptance",
+      "path": "features/intent_workflow.feature",
+      "proposed": null,
+      "expectedAcceptance": "3f7bb80f64545914fa19992e84a8efab4fe127e2312864094895f45a18346a19"
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+

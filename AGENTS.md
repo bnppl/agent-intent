@@ -1,4 +1,4 @@
-# Intent DD contributor workflow
+# Agent Intent contributor workflow
 
 Read `.agents/skills/intent-dd/SKILL.md` before changing behaviour or executable specifications.
 

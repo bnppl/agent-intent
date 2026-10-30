@@ -12,7 +12,7 @@ describe('Lineage descriptions', () => {
     const html = renderLineage([scenario], [
       { description: 'HTML reporting › lists related tests', tags: ['test-lineage'] },
     ]);
-    assert.match(html, /<details>\s*<summary>[\s\S]*?<h2>Generate lineage HTML<\/h2>[\s\S]*?<\/summary>[\s\S]*?<li[^>]*>HTML reporting › lists related tests<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>[\s\S]*?<\/details>/);
+    assert.match(html, /<details>\s*<summary>[\s\S]*?<h2>Generate lineage HTML<\/h2>[\s\S]*?<\/summary>[\s\S]*?<li[^>]*>HTML reporting › lists related tests<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>[\s\S]*?<\/details>/);
     assert.doesNotMatch(html, /<details\b[^>]*\bopen\b/);
   });
 
@@ -33,8 +33,8 @@ describe('Lineage descriptions', () => {
       { description: 'An untagged test', tags: [] },
     ]);
     assert.match(html, /<h2>Generate lineage HTML<\/h2>/);
-    assert.match(html, /<li[^>]*>HTML reporting › lists related tests<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
-    assert.match(html, /<li[^>]*>HTML reporting › ignores unrelated tests<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
+    assert.match(html, /<li[^>]*>HTML reporting › lists related tests<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
+    assert.match(html, /<li[^>]*>HTML reporting › ignores unrelated tests<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
     assert.doesNotMatch(html, /An unrelated test|An untagged test/);
   });
 
@@ -56,7 +56,7 @@ describe('Lineage descriptions', () => {
     const html = renderLineage([{ ...scenario, tags: ['@test-lineage', '@reporting'] }], [
       { description: 'Shared supporting test', tags: ['test-lineage', 'reporting'] },
     ]);
-    assert.equal(html.match(/<li[^>]*>Shared supporting test<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/g)?.length, 1);
+    assert.equal(html.match(/<li[^>]*>Shared supporting test<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/g)?.length, 1);
   });
 
   it('renders scenario and test descriptions as text', lineage, () => {
@@ -66,7 +66,10 @@ describe('Lineage descriptions', () => {
     ]);
     assert.match(html, /&lt;script&gt;alert\(&quot;scenario&quot;\)&lt;\/script&gt;/);
     assert.match(html, /&lt;script&gt;alert\(&quot;test&quot;\)&lt;\/script&gt; &amp; comparison/);
-    assert.doesNotMatch(html, /<script|<img/);
+    const content = html.match(/<main>([\s\S]*?)<\/main>/)?.[1];
+    assert.ok(content, 'Missing report content');
+    assert.match(content, /&lt;img src=x onerror=alert\(1\)&gt;/);
+    assert.doesNotMatch(content, /<script\b|<img\b/i);
   });
 });
 
@@ -93,9 +96,9 @@ describe('Second suite', () => {
 });`);
     d.run(['first.test.mjs', 'second.test.mjs']);
     const html = d.html();
-    assert.match(html, /<li[^>]*>First suite › Slow branch › finishes later<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
-    assert.match(html, /<li[^>]*>First suite › Fast branch › finishes sooner<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
-    assert.match(html, /<li[^>]*>Second suite › belongs to the second file<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
+    assert.match(html, /<li[^>]*>First suite › Slow branch › finishes later<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
+    assert.match(html, /<li[^>]*>First suite › Fast branch › finishes sooner<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
+    assert.match(html, /<li[^>]*>Second suite › belongs to the second file<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
   });
 
   it('lists tests that actually ran rather than skipped tests or suite containers', lineage, () => {
@@ -106,7 +109,7 @@ describe('Supporting suite', { tags: ['test-lineage'] }, () => {
 });`);
     d.run();
     const html = d.html();
-    assert.match(html, /<li[^>]*>Supporting suite › runs its assertions<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
+    assert.match(html, /<li[^>]*>Supporting suite › runs its assertions<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
     assert.doesNotMatch(html, /was skipped|<li[^>]*>Supporting suite<span/);
   });
 
@@ -117,7 +120,7 @@ export function check() { it('helper assertion', { tags: ['test-lineage'] }, () 
 import { check } from './helper.mjs';
 describe('Outer suite', () => { check(); });`);
     d.run();
-    assert.match(d.html(), /<li[^>]*>Outer suite › helper assertion<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
+    assert.match(d.html(), /<li[^>]*>Outer suite › helper assertion<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
   });
 
   it('keeps shared helper descriptions separate across test workers', lineage, () => {
@@ -131,8 +134,8 @@ export function check(name) {
     d.write('second.test.mjs', `import { check } from './helper.mjs'; check('Second suite');`);
     d.run(['first.test.mjs', 'second.test.mjs']);
     const html = d.html();
-    assert.equal(html.match(/<li[^>]*>First suite › helper assertion<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/g)?.length, 1);
-    assert.equal(html.match(/<li[^>]*>Second suite › helper assertion<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/g)?.length, 1);
+    assert.equal(html.match(/<li[^>]*>First suite › helper assertion<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/g)?.length, 1);
+    assert.equal(html.match(/<li[^>]*>Second suite › helper assertion<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/g)?.length, 1);
   });
 
   it('reads configured feature roots including nested feature files', lineage, () => {

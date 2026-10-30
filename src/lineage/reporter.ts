@@ -1,3 +1,5 @@
+import { editorOptions } from '../core/editor.js';
+import { sourceReader } from './source.js';
 import type { TestEvent } from 'node:test/reporters';
 import { workingScenarios } from './load.js';
 import { acceptedScenarios, saveReport } from './state.js';
@@ -6,10 +8,12 @@ import type { LineageTest } from './report.js';
 
 export default async function* lineageReporter(source: AsyncIterable<TestEvent>): AsyncGenerator<string> {
   const scenarios = workingScenarios(process.cwd());
+  const sourceFor = sourceReader(process.cwd());
   const ancestors: string[] = [];
   const tests: LineageTest[] = [];
   let runFailed = false;
   for await (const event of source) {
+    if (event.type === 'test:enqueue') sourceFor(event.data);
     if (event.type === 'test:fail' && !event.data.skip && !event.data.todo) runFailed = true;
     if (event.type === 'test:summary' && event.data.success === false) runFailed = true;
     // Start/pass events arrive in reporting order, unlike enqueue/complete.
@@ -21,9 +25,9 @@ export default async function* lineageReporter(source: AsyncIterable<TestEvent>)
     if ((event.type === 'test:pass' || event.type === 'test:fail') && event.data.details.type !== 'suite'
       && !event.data.skip && !event.data.todo) {
       tests.push({ description: [...ancestors.slice(0, event.data.nesting), event.data.name].join(' › '),
-        tags: event.data.tags, status: event.type === 'test:pass' ? 'passed' : 'failed' });
+        source: sourceFor(event.data), tags: event.data.tags, status: event.type === 'test:pass' ? 'passed' : 'failed' });
     }
   }
   saveReport(process.cwd(), { version: 1, scenarios, tests, runFailed });
-  yield renderLineage(scenarios, tests, { accepted: acceptedScenarios(process.cwd()), runFailed });
+  yield renderLineage(scenarios, tests, { editor: editorOptions(process.cwd()), accepted: acceptedScenarios(process.cwd()), runFailed });
 }

@@ -1,3 +1,4 @@
+import type { EditorOptions } from '../core/editor.js';
 import { definitionText } from './definition.js';
 import { renderLineage } from './report.js';
 import { approvalText } from './review.js';
@@ -57,9 +58,9 @@ pre { max-width: 100%; }
 @media(max-width: 650px) { .approval-panel { padding: 12px; } }
 `;
 
-export function renderStaticReview(review: StaticReview): { html: string; text: string } {
+export function renderStaticReview(review: StaticReview, editor?: EditorOptions): { html: string; text: string } {
   const { snapshot, accepted } = review.model;
-  let html = renderLineage(snapshot.scenarios, snapshot.tests, { accepted, runFailed: snapshot.runFailed, staticReview: true });
+  let html = renderLineage(snapshot.scenarios, snapshot.tests, { editor, accepted, runFailed: snapshot.runFailed, staticReview: true });
   const panel = `<aside class="approval-panel" aria-label="Prepare approvals">
 <h2>Prepare your approvals</h2>
 <p>Expand specifications below to review the accepted and proposed definitions. Select changes individually, then return here.</p>
@@ -78,7 +79,7 @@ export function renderStaticReview(review: StaticReview): { html: string; text: 
   html = html.replace('</head>', `<style>${styles}</style></head>`)
     .replace('<main>', '<main>\n' + panel)
     .replace('</body>', () => `<script id="review-data" type="application/json">${data}</script><script>${client}</script></body>`);
-  const lines = ['Intent DD — mobile specification review', 'Review ID: ' + review.reviewId,
+  const lines = ['Agent Intent — mobile specification review', 'Review ID: ' + review.reviewId,
     'Review before copying. Copy only the complete approval blocks you authorise.',
     'You may paste several blocks together as one batch. Unselected changes remain pending.',
     'Copying does not update acceptance. Hashes are integrity identifiers, not signatures.',

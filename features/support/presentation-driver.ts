@@ -42,7 +42,7 @@ describe('Reporting', () => {
       this.server!.stderr!.on('data', data => { logs += String(data); });
       this.server!.stdout!.on('data', data => {
         logs += String(data);
-        const match = logs.match(/Intent DD: (http:\/\/127\.0\.0\.1:\d+)/);
+        const match = logs.match(/Agent Intent: (http:\/\/127\.0\.0\.1:\d+)/);
         if (match) { clearTimeout(timeout); resolve(match[1]); }
       });
     });

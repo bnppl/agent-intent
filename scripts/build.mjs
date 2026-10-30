@@ -4,7 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const notices = ['@cucumber/gherkin', '@cucumber/messages'].map(name => {
+const notices = ['@cucumber/gherkin', '@cucumber/messages', '@babel/parser', '@babel/types', '@babel/helper-string-parser', '@babel/helper-validator-identifier', 'highlight.js'].map(name => {
   const base = resolve(root, 'node_modules', name);
   const pkg = JSON.parse(readFileSync(resolve(base, 'package.json'), 'utf8'));
   return name + ' ' + pkg.version + '\n' + readFileSync(resolve(base, 'LICENSE'), 'utf8');

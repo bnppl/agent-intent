@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { lineageJs } from 'intentdd:assets';
+import { editorOptions } from './core/editor.js';
 import { resolve } from 'node:path';
 import { IntentError, object } from './core/files.js';
 import { acceptSpecification, reportModel } from './lineage/state.js';
@@ -17,7 +18,7 @@ export function makeServer(root: string): Server {
     const body = type === 'application/json' ? JSON.stringify(value) : String(value);
     response.writeHead(code, { 'Content-Type': type + '; charset=utf-8', 'Content-Length': Buffer.byteLength(body),
       'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'" });
+      'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'" });
     response.end(body);
   }
   async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -28,15 +29,18 @@ export function makeServer(root: string): Server {
       if (request.headers.host !== host) throw new IntentError('Use the exact 127.0.0.1 URL printed by the server');
       if (request.headers.origin && request.headers.origin !== 'http://' + host) throw new IntentError('Cross-origin access refused');
       if (request.headers['sec-fetch-site'] === 'cross-site') throw new IntentError('Cross-site access refused');
-      const path = new URL(request.url || '/', 'http://' + host).pathname;
+      const url = new URL(request.url || '/', 'http://' + host);
+      const path = url.pathname;
       if (request.method === 'GET') {
         if (path === '/lineage.css') return send(response, 200, lineageStyles, 'text/css');
         if (path === '/lineage.js') return send(response, 200, lineageJs, 'text/javascript');
         if (path === '/api/lineage') return send(response, 200, reportModel(root));
         if (path === '/' || path === '/lineage') {
           const model = reportModel(root);
+          const requestedView = url.searchParams.get('view');
+          const view = requestedView === 'changes' || requestedView === 'workflow' ? requestedView : 'specifications';
           return send(response, 200, renderLineage(model.snapshot.scenarios, model.snapshot.tests,
-            { runFailed: model.snapshot.runFailed, accepted: model.accepted, revision: model.revision, sessionToken: token }), 'text/html');
+            { editor: editorOptions(root), runFailed: model.snapshot.runFailed, accepted: model.accepted, revision: model.revision, sessionToken: token, view }), 'text/html');
         }
         return send(response, 404, { error: 'Not found' });
       }
@@ -71,6 +75,6 @@ export async function serve(root: string, port: number): Promise<void> {
   const server = makeServer(root);
   await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
   const address = server.address();
-  if (address && typeof address !== 'string') console.log(`Intent DD: http://127.0.0.1:${address.port}`);
+  if (address && typeof address !== 'string') console.log(`Agent Intent: http://127.0.0.1:${address.port}`);
   console.log('Bound to loopback. Review and accept individual specification changes into intentdd.lock.json.');
 }

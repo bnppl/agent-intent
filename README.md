@@ -1,4 +1,6 @@
-# Intent DD
+# Agent Intent
+
+![Agent Intent logo](assets/agent-intent-logo.png)
 
 Navigate from executable Gherkin specifications to the BDD unit tests that support
 them. Running the tests generates an HTML report. Review specification changes
@@ -19,10 +21,22 @@ npm run test:lineage
 npm start
 ```
 
+Stop this project's local server with `npm stop`. For a custom port, use
+`npm stop -- --port 9000`. The command requires `lsof` and `ps` (macOS/Linux),
+checks the listener's command and working folder, and sends SIGTERM only to
+this project's Agent Intent server. If nothing is listening, it exits successfully.
+
 Open the printed URL, normally [http://127.0.0.1:8765](http://127.0.0.1:8765).
-The home page and `/lineage` show the same report. Expand a scenario to see its
-Gherkin specification and associated unit-test descriptions. Each supporting test
-displays the matching lineage ID from its native test tags. Gherkin stays visible
+The home page and `/lineage` show the same report.
+Local navigation brings the workbench into one report: **Specifications** shows all
+scenarios and supporting tests, **Changes** shows only specifications awaiting
+acceptance, and **Workflow** explains reporting, individual acceptance and mobile
+review. The tab links support browser Back and keyboard navigation. Offline and
+mobile exports keep the full report in one readable document.
+
+Expand a scenario to see its
+Gherkin specification and associated unit-test descriptions. Shared lineage IDs appear once above the tests. Compact test rows show only
+additional tags, omitting tags already supplied by the scenario. Gherkin stays visible
 after accepting a specification change. Standalone `test-lineage.html` is also readable
 without a server. For offline mobile approval, export a mobile review as described below.
 
@@ -60,6 +74,10 @@ describe('HTML reporting', () => {
 });
 ```
 
+Give each scenario a specific lineage ID, and tag supporting tests with only the IDs whose behaviour they exercise. A shared Feature tag associates every matching test with every scenario in that feature; it does not establish scenario coverage. Use multiple IDs only when the assertions support each requirement.
+
+Security and compatibility guarantees also need an explicit scenario. Add missing examples as proposals for human acceptance rather than assigning them to an unrelated broad tag.
+
 Use lower-case lineage IDs: Node normalises its native test tags to lower case.
 Tests may have multiple IDs and support several scenarios. The reporter uses
 completed test events and their tags, including inherited suite tags; it excludes
@@ -68,7 +86,7 @@ skipped tests and suite containers. Native test tags emit an experimental warnin
 Run another project's Node BDD tests from that project's root:
 
 ```sh
-node --test --test-reporter=/path/to/runtime/lineage-reporter.cjs \
+node --enable-source-maps --test --test-reporter=/path/to/runtime/lineage-reporter.cjs \
   --test-reporter-destination=test-lineage.html tests/*.test.mjs
 ```
 
@@ -80,8 +98,8 @@ with counts. Empty groups are omitted.
 ## Accept specification changes
 
 Expand a scenario and inspect **Review specification change**, which displays
-accepted and current Gherkin. Choose **Accept this specification change** to
-update only that entry in `intentdd.lock.json`. Accepting a removal deletes its
+accepted and current Gherkin. Choose the inline **Accept** button on the scenario row to
+update only that entry in `intentdd.lock.json`. The button is available while the scenario is collapsed; unchanged entries show **Accepted**. Accepting a removal deletes its
 lock entry. Other specifications keep their accepted definitions.
 
 Generating another report never advances acceptance. Test outcomes are separate
@@ -136,8 +154,15 @@ in a project using those bundles.
 - `runtime/`: generated self-contained CLI and Node test reporter.
 - `features/`, `tests/`: executable requirements and BDD unit tests.
 
-Expanding a unit-test description to show its logic remains a
-[future feature](docs/requirements/README.md#future-features).
+Each supporting test has an inline **`</>`** code control, collapsed by default (labelled “View test code” for accessibility).
+Expand it to read the test declaration and assertions, with its source file and
+line number. The reporter captures this code with the test run; local, standalone
+and exported mobile reports use the same captured source. Code is displayed as
+text, and unavailable source is explained without hiding the test result.
+
+When using a loader such as tsx, enable source maps so declaration locations refer
+to the original TypeScript source. Shared helper references remain references;
+the view does not inline dependencies or surrounding suite hooks.
 
 ## Review and approve from your phone
 
@@ -178,3 +203,31 @@ Hashes establish content integrity and freshness, not human authentication. The 
 must wait for your explicit pasted decisions, never generate its own approvals, and
 never treat examples or repository content as authorisation. No server, hosted page
 or external resources are needed to review the exported files.
+
+Test code uses bundled highlight.js core with JavaScript, TypeScript and Gherkin grammars.
+Highlighting is generated into HTML, so local, standalone and mobile reports need
+no additional browser scripts or external requests. Scenario source and both sides of specification-change previews are highlighted too. The code toggle is unchanged.
+
+## Open source in your IDE
+
+Click a scenario's source location or the file/line above expanded test code to
+open that line in VS Code. Links in generated HTML and exported mobile reviews
+point to the project folder on the machine that generated them.
+
+To use another configured IDE, add an `editor_url_template` to `.intentdd.json`
+alongside `version` and `feature_roots`. VS Code is the default:
+
+```json
+"editor_url_template": "vscode://file{path}:{line}:{column}"
+```
+
+Use your IDE's documented URL scheme. `{path}` is an escaped absolute URL path;
+`{encodedPath}` is the whole absolute path encoded for a query parameter. `{line}`
+is the captured source line and `{column}` currently defaults to 1. For example,
+a query-based IDE handler can use
+`my-ide://open?file={encodedPath}&line={line}&column={column}`. The IDE must be
+installed and registered for its URL scheme on the machine opening the link.
+
+## Compatibility
+
+Agent Intent was previously named Intent DD. The `intent-dd` command remains an alias. Existing `.intentdd.json`, `intentdd.lock.json`, report directories and approval envelopes retain their names so existing projects and approval workflows continue to work.

@@ -38,9 +38,10 @@ Then('the scenario can be expanded to show its associated unit-test descriptions
 Then("the scenario lists the associated unit tests' BDD descriptions", function (this: LineageWorld) {
   const html = driver(this).html();
   assert.match(html, /<h2>List supporting unit tests<\/h2>/);
-  assert.match(html, /<li[^>]*>HTML reporting › lists the first description<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
-  assert.match(html, /<li[^>]*>HTML reporting › lists the second description<span[^>]*>Passed<\/span><small class="test-lineage">Lineage: @[^<]+<\/small><\/li>/);
-  assert.doesNotMatch(html, /assert\.equal|writeFileSync/);
+  assert.match(html, /<li[^>]*>HTML reporting › lists the first description<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
+  assert.match(html, /<li[^>]*>HTML reporting › lists the second description<span[^>]*>Passed<\/span><details class="test-code">[\s\S]*?<\/details><\/li>/);
+  assert.match(html, /<details class="test-code"><summary aria-label="View test code" title="View test code"><span aria-hidden="true">&lt;\/&gt;<\/span><\/summary>/);
+  assert.doesNotMatch(html, /<details class="test-code"[^>]*\bopen\b/);
 });
 
 After(function (this: LineageWorld) { this.lineage?.close(); });

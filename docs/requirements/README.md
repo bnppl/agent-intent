@@ -24,9 +24,16 @@ it again to collapse them. The native disclosure control also works with the
 keyboard. A scenario with no matching tests explains that none ran with a
 matching lineage ID.
 
-## Future features
+## Test code
 
-- Expand a test description to show its logic.
+Each supporting unit test includes a collapsed inline **`</>`** control with the accessible label **View test code**. Expanding
+it reveals the actual test declaration and assertions captured from source during
+the test run, plus the file and line. The same code appears in local, standalone
+and mobile reports. Source is escaped as text and never executed by the browser.
+Older reports and unavailable source display an explanation while preserving
+results. Source maps retain original TypeScript declarations when using loaders.
+The view shows the declaration, including helper references, rather than inlining
+shared helpers or suite setup.
 
 ## Presentation and individual acceptance
 
@@ -72,9 +79,10 @@ part of this workflow.
 
 ## Unified specification and test report
 
-The Intent DD home page incorporates the test report. Expand a scenario to read
-its Gherkin followed by the supporting BDD unit-test descriptions. Each test row
-shows its matching lineage ID; unrelated test tags do not appear as connections.
+The Agent Intent home page incorporates the test report. Expand a scenario to read
+its Gherkin followed by the supporting BDD unit-test descriptions. Shared lineage IDs appear once at scenario level. Compact test rows omit those
+parent tags and display any additional tags once; the lineage mapping is retained
+without repeated labels.
 Accepted specifications retain their Gherkin source in this view. The generated
 standalone report presents the same information.
 

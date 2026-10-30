@@ -1,0 +1,43 @@
+Agent Intent — mobile specification review
+Review ID: b74d4ea673ee5a1c9e39c35360ce33ed9e1354ceccb1531baf3a26db92830139
+Review before copying. Copy only the complete approval blocks you authorise.
+You may paste several blocks together as one batch. Unselected changes remain pending.
+Copying does not update acceptance. Hashes are integrity identifiers, not signatures.
+After any acceptance or report/source change, request a fresh review before approving more.
+Test outcomes: No run-level failure recorded; inspect individual results below.
+
+================================================
+Display the embedded Agent Intent logo — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-brand-logo
+Scenario: Display the embedded Agent Intent logo
+  Given a specification with associated unit-test descriptions
+  When I view the generated report
+  Then the report includes the embedded Agent Intent logo
+  And the local image policy permits the embedded logo without permitting external images
+Supporting tests:
+PASSED: Integrated Agent Intent report › embeds the logo and permits its image source in the local report policy [report-brand-logo]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "b74d4ea673ee5a1c9e39c35360ce33ed9e1354ceccb1531baf3a26db92830139",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Display the embedded Agent Intent logo\"]:0",
+      "name": "Display the embedded Agent Intent logo",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "c6daa7f07c0d1fdb2a24d8a72602f804192ae5d7c3ffffbbdd61107d36036e38",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+

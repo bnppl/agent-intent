@@ -1,0 +1,45 @@
+Intent DD — mobile specification review
+Review ID: caea2d5f1ea008462ccbaacd1872c6064b19f2d4a2756485fdd84c9b924235f0
+Review before copying. Copy only the complete approval blocks you authorise.
+You may paste several blocks together as one batch. Unselected changes remain pending.
+Copying does not update acceptance. Hashes are integrity identifiers, not signatures.
+After any acceptance or report/source change, request a fresh review before approving more.
+Test outcomes: No run-level failure recorded; inspect individual results below.
+
+================================================
+Navigate the consolidated report workbench — features/lineage_report_presentation.feature
+Change: ADDED
+Previously accepted:
+(not previously accepted)
+Proposed:
+Feature: Understand test lineage results and specification changes
+  A developer can recognise expandable specifications, test results, and changes
+  since the last report whose specification changes they accepted in the web interface.
+@report-workbench-tabs
+Scenario: Navigate the consolidated report workbench
+  Given a previously generated report whose specification changes were accepted in the web interface
+  And a specification has changed since that accepted report
+  When a new report is generated
+  Then the local workbench links to specifications, pending changes and the current workflow
+  And the changes view contains only specifications awaiting acceptance
+  And the workflow view explains individual acceptance without intent annotation or staged approval
+Supporting tests:
+PASSED: navigates pending changes without mutating acceptance and handles an empty review [report-workbench-tabs]
+
+COPY ONLY IF YOU APPROVE THIS SPECIFICATION CHANGE:
+-----BEGIN INTENT DD APPROVAL-----
+{
+  "version": 1,
+  "reviewId": "caea2d5f1ea008462ccbaacd1872c6064b19f2d4a2756485fdd84c9b924235f0",
+  "decisions": [
+    {
+      "key": "[\"features/lineage_report_presentation.feature\",\"Navigate the consolidated report workbench\"]:0",
+      "name": "Navigate the consolidated report workbench",
+      "path": "features/lineage_report_presentation.feature",
+      "proposed": "d8e8c34dd586efa3abf71b968a9d1969289f1e30af726731fd7d6c1da6309489",
+      "expectedAcceptance": null
+    }
+  ]
+}
+-----END INTENT DD APPROVAL-----
+
