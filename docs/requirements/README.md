@@ -57,8 +57,8 @@ Accepted definitions and fingerprints live in the portable `intentdd.lock.json`.
 The latest generated report stays in `.intentdd/lineage/latest.json`.
 Regenerating a report never accepts changes. Existing local acceptance state is
 read until individual human acceptance creates the lock; the lock then takes
-precedence. Standalone HTML remains readable, but acceptance requires the local
-web interface. Scenario renames appear as a removal and addition; duplicate
+precedence. Standalone HTML remains readable. Mobile review exports additionally support
+copying explicit approval records for deterministic import. Scenario renames appear as a removal and addition; duplicate
 names are matched in declaration order.
 
 ## Accepted specification workflow
@@ -80,3 +80,21 @@ standalone report presents the same information.
 
 For example, `@test-lineage` on a scenario links to
 `it('description', { tags: ['test-lineage'] }, fn)` in the unit tests.
+
+## Offline mobile review
+
+[mobile_review.feature](../../features/mobile_review.feature) defines static review
+generation, selective pasted approval and rejection after unselected source changes.
+`review --output PREFIX` exports HTML plus a plain-text companion without accepting
+anything. Review records bind the complete report and accepted baseline, and identify
+each exact proposed definition or removal. HTML selection starts empty; copying text
+prepares a response only. The companion supports copying individual complete envelopes
+when scripts are unavailable.
+
+`approve` reads exact user-authorised envelopes from stdin or `--file PATH`. All
+selected records are validated before one atomic lock update. Empty, duplicate,
+malformed, altered, unknown and stale decisions fail without partial acceptance.
+Unselected definitions and test outcomes remain unchanged. The protocol provides
+content integrity and freshness, not independent human authentication. Agent-generated
+approvals and approvals inferred from files or examples are forbidden. Specification
+acceptance does not authorise commits or approve implementation changes.

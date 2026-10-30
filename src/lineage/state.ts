@@ -51,6 +51,11 @@ export function acceptedScenarios(root: string): StoredScenario[] {
 
 export function saveReport(root: string, snapshot: ReportSnapshot): void { write(root, 'latest', snapshot); }
 
+/** Call only after validating every decision in a human-authorised batch. */
+export function writeAccepted(root: string, scenarios: StoredScenario[]): void {
+  write(root, 'lock', { version: 1, scenarios });
+}
+
 export function reportModel(root: string): ReportModel {
   const value = read(root, 'latest');
   if (!object(value) || value.version !== 1 || !Array.isArray(value.scenarios) || !value.scenarios.every(validScenario)
@@ -75,7 +80,7 @@ export function acceptSpecification(root: string, request: AcceptSpecification):
   if (current?.fingerprint !== candidate?.fingerprint) throw new IntentError('Specification changed since the report; rerun tests');
   const scenarios = model.accepted.filter(scenario => scenario.key !== request.key);
   if (candidate) scenarios.push(candidate);
-  write(root, 'lock', { version: 1, scenarios });
+  writeAccepted(root, scenarios);
 }
 
 /** Test runs never advance acceptance. Verification reads current source and the lock. */

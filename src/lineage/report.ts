@@ -6,7 +6,7 @@ import { groupRows } from './grouping.js';
 
 export interface LineageTest { description: string; tags: readonly string[]; status?: 'passed' | 'failed' }
 export type LineageScenario = Pick<Scenario, 'id' | 'path' | 'name' | 'tags'> & { key?: string; fingerprint?: string; definition?: string };
-export interface ReportOptions { accepted?: readonly StoredScenario[]; sessionToken?: string; revision?: string; runFailed?: boolean }
+export interface ReportOptions { accepted?: readonly StoredScenario[]; sessionToken?: string; revision?: string; runFailed?: boolean; staticReview?: boolean }
 
 function text(value: string): string {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
@@ -34,7 +34,9 @@ export function renderLineage(scenarios: readonly LineageScenario[], tests: read
     const result = related.some(test => test.status === 'failed') ? 'failed' : related.length ? 'passed' : 'not-run';
     const changeLabel = change === 'unchanged' ? '' : `<span class="badge change-${change}">${change[0].toUpperCase() + change.slice(1)}</span>`;
     const review = change === 'unchanged' || !scenario.definition ? '' : `<details class="spec-change"><summary>${chevron}Review specification change</summary><div class="comparison"><div><h3>Previously accepted</h3>${previous ? `<pre>${text(definitionText(previous.definition))}</pre>` : '<p>Not previously accepted.</p>'}</div><div><h3>Current specification</h3>${change === 'removed' ? '<p>Specification removed.</p>' : `<pre>${text(definitionText(scenario.definition))}</pre>`}</div></div></details>`;
-    const action = change === 'unchanged' ? '' : `<div class="review-actions"><button type="button" data-accept="${text(key)}" data-previous="${previous?.fingerprint ?? ''}"${options.sessionToken ? '' : ' disabled'}>Accept this specification${change === 'removed' ? ' removal' : ' change'}</button></div>`;
+    const action = change === 'unchanged' ? '' : options.staticReview
+      ? `<div class="review-actions"><label class="approval-choice"><input type="checkbox" data-review-key="${text(key)}"> Select approval of this specification ${change === 'removed' ? 'removal' : 'change'}</label></div>`
+      : `<div class="review-actions"><button type="button" data-accept="${text(key)}" data-previous="${previous?.fingerprint ?? ''}"${options.sessionToken ? '' : ' disabled'}>Accept this specification${change === 'removed' ? ' removal' : ' change'}</button></div>`;
     return { result, change, html: `<section id="${text(scenario.id + (change === 'removed' ? '-removed' : ''))}" data-result="${result}" data-change="${change}">
 <details>
 <summary>${chevron}<h2>${text(scenario.name)}</h2>${resultLabel(result)}${changeLabel}</summary>
@@ -67,7 +69,7 @@ ${options.runFailed ? '<p class="message error" role="alert">Test run failed. Re
 <p>Select a scenario to read its Gherkin and associated unit-test descriptions. Select it again to collapse the list.</p>
 <div class="legend"><span class="legend-label">Test results</span>${resultLabel('passed')}${resultLabel('failed')}${resultLabel('not-run')}</div>
 <div class="legend"><span class="legend-label">Since individual acceptance</span><span class="badge change-added">Added</span><span class="badge change-modified">Modified</span><span class="badge change-removed">Removed</span></div>
-<p class="help">${options.sessionToken ? 'Accept each specification independently. Acceptance updates only that specification in intentdd.lock.json.' : 'To accept individual specification changes, run npm start and <a href="http://127.0.0.1:8765/lineage">open the local review interface</a> (or use the printed port followed by /lineage).'}</p>
+<p class="help">${options.staticReview ? 'Review each change, then select only the specifications you approve. Copy your approval text and paste it into the agent conversation. This file never updates acceptance.' : options.sessionToken ? 'Accept each specification independently. Acceptance updates only that specification in intentdd.lock.json.' : 'To accept individual specification changes, run npm start and <a href="http://127.0.0.1:8765/lineage">open the local review interface</a> (or use the printed port followed by /lineage).'}</p>
 <p class="message" role="status" id="lineage-message"></p>
 <div id="scenario-groups">${groupRows(sections)}</div>
 </main>
