@@ -20,7 +20,8 @@
     "test:unit": "node --import tsx --test tests/*.test.ts",
     "test:lineage": "node --enable-source-maps --import tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./runtime/lineage-reporter.cjs --test-reporter-destination=test-lineage.html tests/*.test.ts",
     "test": "npm run typecheck && npm run build:check && npm run test:acceptance && npm run test:unit",
-    "stop": "node --import tsx scripts/stop.ts"
+    "stop": "node --import tsx scripts/stop.ts",
+    "pages:prepare": "node scripts/prepare-pages.mjs"
   },
   "dependencies": {
     "@babel/parser": "8.0.10",

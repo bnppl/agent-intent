@@ -231,3 +231,16 @@ installed and registered for its URL scheme on the machine opening the link.
 ## Compatibility
 
 The command is `agent-intent`. Existing `.intentdd.json`, `intentdd.lock.json` and report directories retain their names. Approval envelopes use `AGENT INTENT APPROVAL` headers; export a fresh review before approving changes from an older export.
+
+## Publish documentation with GitHub Pages
+
+The `Publish GitHub Pages` workflow builds and tests the framework, then publishes
+this README and the logo as a documentation site on pushes to `main` or a manual
+workflow run. In repository **Settings → Pages → Build and deployment**, select
+**GitHub Actions** as the source before the first deployment. The deployment's
+`github-pages` environment links to the published site.
+
+`npm run pages:prepare` stages the homepage and assets in `.pages-source/` for
+Jekyll. Only that documentation output is uploaded; reports, approval envelopes
+and local project state are excluded. The hosted site documents the framework;
+run the CLI locally to generate reports and review specification changes.
