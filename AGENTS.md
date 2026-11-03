@@ -8,7 +8,7 @@ human acceptance. Never self-approve.
 
 Run `npm ci`, `npm run build`, and `npm test`. Include both generated `runtime/*.cjs`
 bundles alongside source in review. The current workflow uses report snapshots and
-`intentdd.lock.json`; it does not provide Git-hook enforcement.
+`agent-intent.lock.json`; it does not provide Git-hook enforcement.
 
 For mobile review, run `npm run test:lineage` then `npm run intent -- review --output PREFIX`
 and share both static files. Selection and copying never accept changes. Only after the

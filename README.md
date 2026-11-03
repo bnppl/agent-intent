@@ -4,27 +4,95 @@
 
 Navigate from executable Gherkin specifications to the BDD unit tests that support
 them. Running the tests generates an HTML report. Review specification changes
-individually against the last accepted definitions in `intentdd.lock.json`.
+individually against the last accepted definitions in `agent-intent.lock.json`.
 
 Every Gherkin scenario is a specification; no additional intent classification
 is required. Shared lineage tags connect scenarios and unit tests.
 
-## Run locally
+## Install in your project
 
-Requires **Node.js 24.19+**. Build and test the framework:
+Requires **Node.js 24.19+**. Install the prebuilt tool from the public repository:
 
 ```sh
-npm ci
-npm run build
-npm test
-npm run test:lineage
-npm start
+npm install --save-dev github:bnppl/intent-dd
+npx agent-intent --help
 ```
 
-Stop this project's local server with `npm stop`. For a custom port, use
-`npm stop -- --port 9000`. The command requires `lsof` and `ps` (macOS/Linux),
-checks the listener's command and working folder, and sends SIGTERM only to
-this project's Agent Intent server. If nothing is listening, it exits successfully.
+The lockfile pins the Git commit. To install a specific revision, append
+`#COMMIT` to the GitHub dependency. No tool build is needed in your project.
+The package provides the CLI and the Node test lineage reporter.
+
+Add `.agent-intent.json` in your project root, adapting commands to your actual
+build and tests:
+
+```json
+{
+  "version": 1,
+  "feature_roots": ["features"],
+  "checks": [
+    ["npm", "run", "build"],
+    ["npm", "test"],
+    ["npm", "run", "test:lineage"]
+  ]
+}
+```
+
+Each check is an executable followed by its arguments, run in order from the
+project root without a shell. A nonzero exit stops the workflow. Configure the
+complete checks for your project; the names above are examples, not required
+scripts. Use an existing npm script for shell pipelines. Only run configuration
+you trust: these commands execute with your user permissions.
+
+For Node's test runner, an example optional script is:
+
+```json
+{
+  "scripts": {
+    "test:lineage": "node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=agent-intent/runtime/lineage-reporter.cjs --test-reporter-destination=test-lineage.html tests/*.test.mjs"
+  }
+}
+```
+
+Preserve your project's loaders and discovery paths. This reporter consumes Node
+test events; Jest, Vitest and Cucumber require their own integration, and running
+them does not automatically populate lineage. Specifications without executed
+related tests remain **Not run**. Ignore `.agent-intent/lineage/`,
+`.agent-intent/server-*.log` and `test-lineage.html` in Git. Keep the human-owned
+`agent-intent.lock.json`.
+
+Your everyday command is:
+
+```sh
+npx agent-intent start
+```
+
+It runs the configured checks, requires a newly generated lineage snapshot,
+and leaves the review server running in the background. It prints the URL, PID
+and log file, then returns your terminal. Repeating it refreshes the evidence
+and reuses this project's existing server. It never accepts specifications.
+Your application's `npm start` is yours to define.
+
+```sh
+npx agent-intent run                 # checks and fresh evidence, then exit (CI)
+npx agent-intent status              # report and server PID/URL (null if stopped)
+npx agent-intent stop                # stop only this project's server
+npx agent-intent serve               # foreground server using existing evidence
+npx agent-intent start --port 9000    # use the same port for status and stop
+```
+
+Commands use the current project directory, or explicit `--root PATH`.
+`start`, `stop` and `status` require `lsof` and `ps` (macOS/Linux) to check process
+ownership. Another project's listener is never reused or stopped. Logs are at
+`.agent-intent/server-PORT.log`. Restart after upgrading the installed tool.
+`run` requires no acceptance and exits nonzero on check/report failures; use
+`verify` separately when CI must also require accepted specifications.
+
+## Develop Agent Intent itself
+
+In this repository, run `npm ci`, `npm run build`, then
+`npm run intent -- start`. Its configured checks build both runtimes, run the full
+test suite and generate lineage evidence. `npm start` and `npm stop` are optional
+shortcuts only in this checkout. Source changes must include both generated bundles.
 
 Open the printed URL, normally [http://127.0.0.1:8765](http://127.0.0.1:8765).
 The home page and `/lineage` show the same report.
@@ -44,14 +112,13 @@ The self-contained runtimes work in ordinary project folders without installing
 packages there:
 
 ```sh
-node /path/to/runtime/cli.cjs --root /path/to/project serve --port 8765
+npx agent-intent --root /path/to/project start --port 8765
 node /path/to/runtime/cli.cjs --root /path/to/project status
 node /path/to/runtime/cli.cjs --root /path/to/project verify
 node /path/to/runtime/cli.cjs --root /path/to/project spec
 ```
 
-`spec` renders current Gherkin source. `status` outputs the latest report and
-accepted definitions. `verify` rejects source that changed since the report,
+`spec` renders current Gherkin source. `status` outputs the latest report, accepted definitions and server PID/URL. `verify` rejects source that changed since the report,
 failing test outcomes, and specification changes awaiting acceptance. A scenario
 without executed related tests remains **Not run**; verification does not claim
 coverage or rerun tests.
@@ -99,7 +166,7 @@ with counts. Empty groups are omitted.
 
 Expand a scenario and inspect **Review specification change**, which displays
 accepted and current Gherkin. Choose the inline **Accept** button on the scenario row to
-update only that entry in `intentdd.lock.json`. The button is available while the scenario is collapsed; unchanged entries show **Accepted**. Accepting a removal deletes its
+update only that entry in `agent-intent.lock.json`. The button is available while the scenario is collapsed; unchanged entries show **Accepted**. Accepting a removal deletes its
 lock entry. Other specifications keep their accepted definitions.
 
 Generating another report never advances acceptance. Test outcomes are separate
@@ -108,10 +175,10 @@ Gherkin definitions with the accepted lock; source-line shifts alone are ignored
 Inherited Feature, Rule, Background and Examples meaning is included. Renaming a
 scenario appears as removal and addition; duplicate names use declaration order.
 
-The portable **`intentdd.lock.json`** stores versioned accepted definitions and
+The portable **`agent-intent.lock.json`** stores versioned accepted definitions and
 fingerprints. Keep it with your project to share the accepted baseline. The latest
-run lives separately in `.intentdd/lineage/latest.json`. Existing local
-`.intentdd/lineage/accepted.json` baselines remain readable until the first explicit
+run lives separately in `.agent-intent/lineage/latest.json`. Existing local
+`.agent-intent/lineage/accepted.json` baselines remain readable until the first explicit
 acceptance writes the new lock. Once present, the lock takes precedence. Invalid
 lock data is rejected rather than replaced with an empty baseline.
 
@@ -121,7 +188,7 @@ text-only specification previews with restrictive content security headers.
 
 ## Configuration
 
-The reporter reads `.feature` files below `feature_roots` in `.intentdd.json`,
+The reporter reads `.feature` files below `feature_roots` in `.agent-intent.json`,
 defaulting to `features` when configuration is absent:
 
 ```json
@@ -214,7 +281,7 @@ Click a scenario's source location or the file/line above expanded test code to
 open that line in VS Code. Links in generated HTML and exported mobile reviews
 point to the project folder on the machine that generated them.
 
-To use another configured IDE, add an `editor_url_template` to `.intentdd.json`
+To use another configured IDE, add an `editor_url_template` to `.agent-intent.json`
 alongside `version` and `feature_roots`. VS Code is the default:
 
 ```json
@@ -230,7 +297,7 @@ installed and registered for its URL scheme on the machine opening the link.
 
 ## Compatibility
 
-The command is `agent-intent`. Existing `.intentdd.json`, `intentdd.lock.json` and report directories retain their names. Approval envelopes use `AGENT INTENT APPROVAL` headers; export a fresh review before approving changes from an older export.
+The command is `agent-intent`. Configuration uses `.agent-intent.json`, accepted definitions use `agent-intent.lock.json`, and report snapshots live under `.agent-intent/lineage/`. When upgrading an existing project, rename `.intentdd.json`, `intentdd.lock.json` and `.intentdd/` to those names; keep their contents intact. Approval envelopes use `AGENT INTENT APPROVAL` headers; export a fresh review before approving changes from an older export.
 
 ## Publish documentation with GitHub Pages
 

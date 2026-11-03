@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
-import { lineageJs } from 'intentdd:assets';
+import { lineageJs } from 'agent-intent:assets';
 import { editorOptions } from './core/editor.js';
 import { resolve } from 'node:path';
 import { IntentError, object } from './core/files.js';
@@ -45,7 +45,7 @@ export function makeServer(root: string): Server {
         return send(response, 404, { error: 'Not found' });
       }
       if (request.method !== 'POST') return send(response, 405, { error: 'Method not allowed' });
-      const supplied = Buffer.from(String(request.headers['x-intentdd-token'] || '')), expected = Buffer.from(token);
+      const supplied = Buffer.from(String(request.headers['x-agent-intent-token'] || '')), expected = Buffer.from(token);
       if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) return send(response, 403, { error: 'Missing or invalid session token' });
       if (request.headers['content-type']?.split(';')[0] !== 'application/json') return send(response, 415, { error: 'JSON body required' });
       const length = Number(request.headers['content-length']);
@@ -76,5 +76,6 @@ export async function serve(root: string, port: number): Promise<void> {
   await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
   const address = server.address();
   if (address && typeof address !== 'string') console.log(`Agent Intent: http://127.0.0.1:${address.port}`);
-  console.log('Bound to loopback. Review and accept individual specification changes into intentdd.lock.json.');
+  if (process.send) process.send('agent-intent:ready');
+  console.log('Bound to loopback. Review and accept individual specification changes into agent-intent.lock.json.');
 }

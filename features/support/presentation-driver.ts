@@ -53,7 +53,7 @@ describe('Reporting', () => {
   async request(path: string, value?: unknown, token?: string, headers: Record<string, string> = {}): Promise<Response> {
     await this.start();
     return fetch(this.origin + path, value === undefined ? { headers } : { method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-IntentDD-Token': token ?? this.token ?? '', ...headers }, body: JSON.stringify(value) });
+      headers: { 'Content-Type': 'application/json', 'X-Agent-Intent-Token': token ?? this.token ?? '', ...headers }, body: JSON.stringify(value) });
   }
 
   async rawStatus(path: string, headers: Record<string, string>): Promise<number> {

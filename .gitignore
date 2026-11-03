@@ -7,7 +7,11 @@ __pycache__/
 node_modules/
 coverage/
 test-lineage.html
-.intentdd/lineage/
+.agent-intent/lineage/
 
 .pages-source/
 .pages-output/
+
+.agent-intent/server.log
+
+.agent-intent/server-*.log

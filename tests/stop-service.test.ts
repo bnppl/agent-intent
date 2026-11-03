@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { it } from 'node:test';
-import { isProjectService } from '../scripts/stop.js';
+import { isProjectService } from '../src/workflow.js';
 
 it('identifies only the Agent Intent serve command in the project folder', { tags: ['stop-service'] }, () => {
   assert.equal(isProjectService('/project', '/project', 'node runtime/cli.cjs serve'), true);

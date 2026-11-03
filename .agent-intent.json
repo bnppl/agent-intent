@@ -16,12 +16,28 @@
     "src",
     "runtime",
     "scripts",
-    ".intentdd.json",
+    ".agent-intent.json",
     ".agents",
     "AGENTS.md",
     "package.json",
     "package-lock.json",
     "tsconfig.json",
     "cucumber.mjs"
+  ],
+  "checks": [
+    [
+      "npm",
+      "run",
+      "build"
+    ],
+    [
+      "npm",
+      "test"
+    ],
+    [
+      "npm",
+      "run",
+      "test:lineage"
+    ]
   ]
 }

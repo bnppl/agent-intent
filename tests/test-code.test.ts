@@ -47,7 +47,7 @@ export function check() {
 import { check } from './helper.mjs';
 describe('Outer', () => check());`);
       d.run();
-      const snapshot = JSON.parse(readFileSync(join(d.root, '.intentdd/lineage/latest.json'), 'utf8'));
+      const snapshot = JSON.parse(readFileSync(join(d.root, '.agent-intent/lineage/latest.json'), 'utf8'));
       assert.equal(snapshot.tests[0].source?.path, 'helper.mjs');
       assert.match(snapshot.tests[0].source?.code ?? '', /assert\.equal\(value, '\}'\);/);
       assert.doesNotMatch(snapshot.tests[0].source?.code ?? '', /export function|import/);
@@ -72,7 +72,7 @@ it('checks another value', {tags:['second']}, () => {
   assert.ok(true);
 });`);
       d.run(['example.test.ts'], 0, ['--import', fileURLToPath(new URL('../node_modules/tsx/dist/loader.mjs', import.meta.url))]);
-      const snapshot = JSON.parse(readFileSync(join(d.root, '.intentdd/lineage/latest.json'), 'utf8'));
+      const snapshot = JSON.parse(readFileSync(join(d.root, '.agent-intent/lineage/latest.json'), 'utf8'));
       assert.equal(snapshot.tests[0].source?.line, 6);
       assert.match(snapshot.tests[0].source?.code ?? '', /const value: Value =/);
       assert.doesNotMatch(snapshot.tests[0].source?.code ?? '', /checks another value/);

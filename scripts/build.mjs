@@ -16,8 +16,8 @@ const result = await build({ absWorkingDir: root, entryPoints: ['src/cli.ts'], b
   target: 'node24', write: false, legalComments: 'inline', minify: true,
   footer: { js: '/* Bundled third-party notices\n' + notices.replaceAll('*/', '* /') + '\n*/' },
   plugins: [{ name: 'embedded-ui', setup(api) {
-    api.onResolve({ filter: /^intentdd:assets$/ }, () => ({ path: 'assets', namespace: 'intentdd' }));
-    api.onLoad({ filter: /.*/, namespace: 'intentdd' }, () => ({ contents: Object.entries(assets).map(([key, value]) => `export const ${key} = ${JSON.stringify(value)};`).join('\n'), loader: 'js' }));
+    api.onResolve({ filter: /^agent-intent:assets$/ }, () => ({ path: 'assets', namespace: 'agent-intent' }));
+    api.onLoad({ filter: /.*/, namespace: 'agent-intent' }, () => ({ contents: Object.entries(assets).map(([key, value]) => `export const ${key} = ${JSON.stringify(value)};`).join('\n'), loader: 'js' }));
   } }] });
 const lineage = await build({ absWorkingDir: root, entryPoints: ['src/lineage/reporter.ts'], bundle: true,
   platform: 'node', format: 'cjs', target: 'node24', write: false, minify: true, legalComments: 'inline',

@@ -139,7 +139,7 @@ export function check(name) {
   });
 
   it('reads configured feature roots including nested feature files', lineage, () => {
-    d.write('.intentdd.json', JSON.stringify({ version: 1, feature_roots: ['requirements'] }));
+    d.write('.agent-intent.json', JSON.stringify({ version: 1, feature_roots: ['requirements'] }));
     d.write('requirements/nested/report.feature', `Feature: Configured requirements
   @test-lineage
   Scenario: Use the configured feature root

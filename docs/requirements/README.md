@@ -17,7 +17,7 @@ the `it` description, using the tests that actually ran.
 
 Run `npm run test:lineage` to generate `test-lineage.html`. Open that file in a
 browser; it is standalone HTML and needs no server. Feature roots come from
-`.intentdd.json`, defaulting to `features` in projects without configuration.
+`.agent-intent.json`, defaulting to `features` in projects without configuration.
 
 Select a scenario name to expand its associated unit-test descriptions; select
 it again to collapse them. The native disclosure control also works with the
@@ -44,7 +44,7 @@ related tests are neutral. The runner still returns a failing exit status when
 tests fail, while producing the HTML report.
 
 Specification changes are compared with the last individually accepted report
-definition in `intentdd.lock.json`, rather than the last unaccepted run. Added, Modified and Removed
+definition in `agent-intent.lock.json`, rather than the last unaccepted run. Added, Modified and Removed
 markers use separate colours and labels from execution results. On first use,
 specifications are Added until accepted. Source-line shifts do not count as
 changes; inherited Feature, Rule and Background meaning does.
@@ -54,14 +54,14 @@ Changed, Unchanged and Removed. Empty groups are omitted, and each group shows
 its specification count. Individual acceptance moves the scenario into its
 Unchanged group immediately, preserving its expanded state and updating counts.
 
-Run `npm start` and open the printed URL followed by `/lineage`. Expand a
+Run `npm run intent -- start` in this repository (or `npx agent-intent start` in a consuming project) and open the printed URL followed by `/lineage`. Expand a
 specification, inspect the previously accepted and current Gherkin under
 **Review specification change**, then choose **Accept this specification
 change**. Other specification baselines remain unchanged. Stale reports,
 changed source and stale individual acceptances are rejected.
 
-Accepted definitions and fingerprints live in the portable `intentdd.lock.json`.
-The latest generated report stays in `.intentdd/lineage/latest.json`.
+Accepted definitions and fingerprints live in the portable `agent-intent.lock.json`.
+The latest generated report stays in `.agent-intent/lineage/latest.json`.
 Regenerating a report never accepts changes. Existing local acceptance state is
 read until individual human acceptance creates the lock; the lock then takes
 precedence. Standalone HTML remains readable. Mobile review exports additionally support

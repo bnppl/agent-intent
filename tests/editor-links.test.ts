@@ -20,7 +20,7 @@ describe('Report source links', () => {
     const d = new PresentationDriver();
     try {
       d.fixtures();
-      d.write('.intentdd.json', JSON.stringify({version:1, feature_roots:['features'],
+      d.write('.agent-intent.json', JSON.stringify({version:1, feature_roots:['features'],
         editor_url_template:'my-ide://open?file={encodedPath}&line={line}&column={column}'}));
       d.write('a file #1.test.mjs', `import { it } from 'node:test';\nit('supports a promise', {tags:['first']}, () => {});`);
       d.run(['a file #1.test.mjs']);
@@ -34,7 +34,7 @@ describe('Report source links', () => {
     try {
       d.fixtures(); d.run();
       for (const template of ['javascript:alert(1)', 'data:text/html,{path}', 'vscode://file/{unknown}', 42]) {
-        d.write('.intentdd.json', JSON.stringify({version:1, feature_roots:['features'], editor_url_template:template}));
+        d.write('.agent-intent.json', JSON.stringify({version:1, feature_roots:['features'], editor_url_template:template}));
         assert.equal((await d.request('/')).status, 409);
       }
     } finally { await d.stop(); }

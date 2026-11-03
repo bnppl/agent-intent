@@ -27,9 +27,9 @@ describe('Accepted specification lock workflow', () => {
     const d = new PresentationDriver();
     try {
       d.fixtures(); d.run();
-      assert.equal(existsSync(join(d.root, 'intentdd.lock.json')), false);
+      assert.equal(existsSync(join(d.root, 'agent-intent.lock.json')), false);
       assert.equal((await d.accept('First specification')).status, 200);
-      const lock = JSON.parse(readFileSync(join(d.root, 'intentdd.lock.json'), 'utf8'));
+      const lock = JSON.parse(readFileSync(join(d.root, 'agent-intent.lock.json'), 'utf8'));
       assert.equal(lock.version, 1);
       assert.deepEqual(lock.scenarios.map((s: { name: string }) => s.name), ['First specification']);
       d.run();
@@ -85,14 +85,14 @@ describe('Specification lock persistence', () => {
     try {
       d.fixtures(); d.run();
       const model = await d.model();
-      d.write('.intentdd/lineage/accepted.json', JSON.stringify({version: 1, scenarios: [model.snapshot.scenarios[0]]}));
+      d.write('.agent-intent/lineage/accepted.json', JSON.stringify({version: 1, scenarios: [model.snapshot.scenarios[0]]}));
       assert.deepEqual((await d.model()).accepted.map(s => s.name), ['First specification']);
-      assert.equal(existsSync(join(d.root, 'intentdd.lock.json')), false);
+      assert.equal(existsSync(join(d.root, 'agent-intent.lock.json')), false);
       assert.equal((await d.accept('Second specification')).status, 200);
-      const lock = readFileSync(join(d.root, 'intentdd.lock.json'), 'utf8');
+      const lock = readFileSync(join(d.root, 'agent-intent.lock.json'), 'utf8');
       assert.deepEqual(JSON.parse(lock).scenarios.map((s: {name: string}) => s.name), ['First specification', 'Second specification']);
       // Once present, the portable lock is the authoritative acceptance baseline.
-      d.write('.intentdd/lineage/accepted.json', JSON.stringify({version: 1, scenarios: []}));
+      d.write('.agent-intent/lineage/accepted.json', JSON.stringify({version: 1, scenarios: []}));
       assert.equal((await d.model()).accepted.length, 2);
     } finally { await d.stop(); }
   });
@@ -102,8 +102,8 @@ describe('Specification lock persistence', () => {
     try {
       d.fixtures(); d.run();
       const model = await d.model();
-      d.write('.intentdd/lineage/accepted.json', JSON.stringify({version: 1, scenarios: model.snapshot.scenarios}));
-      d.write('intentdd.lock.json', 'null');
+      d.write('.agent-intent/lineage/accepted.json', JSON.stringify({version: 1, scenarios: model.snapshot.scenarios}));
+      d.write('agent-intent.lock.json', 'null');
       const response = await d.request('/api/lineage');
       assert.equal(response.status, 409);
       assert.match(await response.text(), /Invalid lineage acceptance state/);
@@ -165,7 +165,7 @@ describe('Local acceptance HTTP boundaries', () => {
       d.fixtures(); d.run();
       assert.equal((await d.request('/api/lineage/accept', { revision: 'bad', key: 1 })).status, 409);
       assert.equal((await d.request('/api/lineage/accept', {}, undefined, { 'Content-Type': 'text/plain' })).status, 415);
-      assert.equal(existsSync(join(d.root, 'intentdd.lock.json')), false);
+      assert.equal(existsSync(join(d.root, 'agent-intent.lock.json')), false);
       const response = await d.request('/');
       assert.match(response.headers.get('content-security-policy') ?? '', /script-src 'self'/);
       assert.equal(response.headers.get('cache-control'), 'no-store');

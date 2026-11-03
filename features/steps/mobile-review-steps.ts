@@ -31,7 +31,7 @@ Then('the static files show the specifications and copyable approval records', f
   assert.match(text, /BEGIN AGENT INTENT APPROVAL/); assert.match(text, /Second specification/);
 });
 Then('no specifications have been accepted', function (this: MobileWorld) {
-  assert.equal(existsSync(join(this.mobile!.root, 'intentdd.lock.json')), false);
+  assert.equal(existsSync(join(this.mobile!.root, 'agent-intent.lock.json')), false);
 });
 Given('a copied approval for the first specification', function (this: MobileWorld) {
   const review = createReview(this.mobile!.root);
@@ -43,7 +43,7 @@ When('I paste an approval for the first specification', function (this: MobileWo
   const result = run(this, ['approve'], text); assert.equal(result.status, 0, result.stderr);
 });
 Then('only the first specification is accepted', function (this: MobileWorld) {
-  const lock = JSON.parse(readFileSync(join(this.mobile!.root, 'intentdd.lock.json'), 'utf8'));
+  const lock = JSON.parse(readFileSync(join(this.mobile!.root, 'agent-intent.lock.json'), 'utf8'));
   assert.deepEqual(lock.scenarios.map((s: { name: string }) => s.name), ['First specification']);
 });
 When('the second specification changes after review', function (this: MobileWorld) {
@@ -53,12 +53,12 @@ When('the second specification changes after review', function (this: MobileWorl
 Then('importing the copied approval fails without accepting any specifications', function (this: MobileWorld) {
   const result = run(this, ['approve'], this.copiedApproval);
   assert.equal(result.status, 1); assert.match(result.stderr, /changed|rerun/i);
-  assert.equal(existsSync(join(this.mobile!.root, 'intentdd.lock.json')), false);
+  assert.equal(existsSync(join(this.mobile!.root, 'agent-intent.lock.json')), false);
 });
 After(function (this: MobileWorld) { this.mobile?.close(); });
 
 function acceptanceBytes(w: MobileWorld): string | null {
-  const path = join(w.mobile!.root, 'intentdd.lock.json');
+  const path = join(w.mobile!.root, 'agent-intent.lock.json');
   return existsSync(path) ? readFileSync(path, 'utf8') : null;
 }
 When('a pasted approval batch is {string}', function(this: MobileValidationWorld, problem: string) {

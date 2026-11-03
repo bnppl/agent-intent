@@ -11,7 +11,7 @@ export interface ReportModel { snapshot: ReportSnapshot; accepted: StoredScenari
 export interface AcceptSpecification { revision: string; key: string; expectedAcceptance: string | null }
 
 function file(root: string, name: string): string {
-  const path = name === 'lock' ? join(root, 'intentdd.lock.json') : join(root, '.intentdd', 'lineage', name + '.json');
+  const path = name === 'lock' ? join(root, 'agent-intent.lock.json') : join(root, '.agent-intent', 'lineage', name + '.json');
   if (hasSymlinkParent(root, path) || (existsSync(path) && !lstatSync(path).isFile())) {
     throw new IntentError('Report state must use regular files without symlinks');
   }
@@ -26,7 +26,7 @@ function read(root: string, name: string): unknown {
 }
 
 function write(root: string, name: string, value: unknown): void {
-  const path = file(root, name), directory = join(root, '.intentdd', 'lineage');
+  const path = file(root, name), directory = join(root, '.agent-intent', 'lineage');
   mkdirSync(directory, { recursive: true });
   const temporary = mkdtempSync(join(directory, '.write-'));
   try { const candidate = join(temporary, 'state'); writeFileSync(candidate, JSON.stringify(value)); renameSync(candidate, path); }

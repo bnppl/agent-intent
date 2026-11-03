@@ -11,7 +11,7 @@ document.querySelectorAll<HTMLButtonElement>('button[data-accept]').forEach(butt
     if (message) { message.textContent = ''; message.classList.remove('error'); }
     try {
       const response = await fetch('/api/lineage/accept', { method: 'POST', headers: {
-        'Content-Type': 'application/json', 'X-IntentDD-Token': token,
+        'Content-Type': 'application/json', 'X-Agent-Intent-Token': token,
       }, body: JSON.stringify({ revision, key: button.dataset.accept, expectedAcceptance: button.dataset.previous || null }) });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw Error(result.error ?? 'Acceptance failed. Reload the report and try again.');

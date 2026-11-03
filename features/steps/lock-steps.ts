@@ -26,11 +26,11 @@ When('I accept one specification', async function (this: LockWorld) {
   assert.equal((await driver(this).accept('First specification')).status, 200);
 });
 Then('the lock contains only that accepted specification', function (this: LockWorld) {
-  const lock = JSON.parse(readFileSync(join(driver(this).root, 'intentdd.lock.json'), 'utf8'));
+  const lock = JSON.parse(readFileSync(join(driver(this).root, 'agent-intent.lock.json'), 'utf8'));
   assert.deepEqual(lock.scenarios.map((s: {name: string}) => s.name), ['First specification']);
 });
 Then('another test run leaves the lock unchanged', function (this: LockWorld) {
-  const path = join(driver(this).root, 'intentdd.lock.json'), before = readFileSync(path, 'utf8');
+  const path = join(driver(this).root, 'agent-intent.lock.json'), before = readFileSync(path, 'utf8');
   driver(this).run(); assert.equal(readFileSync(path, 'utf8'), before);
 });
 Then('verification reports pending specification acceptance', function (this: LockWorld) {

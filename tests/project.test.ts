@@ -11,9 +11,9 @@ describe('Project specification discovery', () => {
     const d = new LineageDriver();
     try {
       d.scenario('example');
-      d.write('.intentdd.json', JSON.stringify({version: 1, feature_roots: ['../outside']}));
+      d.write('.agent-intent.json', JSON.stringify({version: 1, feature_roots: ['../outside']}));
       assert.throws(() => workingScenarios(d.root), /safe project-relative path/);
-      d.write('.intentdd.json', JSON.stringify({version: 1, feature_roots: ['features']}));
+      d.write('.agent-intent.json', JSON.stringify({version: 1, feature_roots: ['features']}));
       d.write('other.feature', 'Feature: Other\n  Scenario: Other\n    Given other\n');
       unlinkSync(join(d.root, 'features/example.feature'));
       symlinkSync('../other.feature', join(d.root, 'features/example.feature'));
@@ -26,9 +26,9 @@ describe('Project specification discovery', () => {
     try {
       d.scenario('example');
       d.write('config.json', JSON.stringify({version: 1, feature_roots: ['features']}));
-      symlinkSync('config.json', join(d.root, '.intentdd.json'));
+      symlinkSync('config.json', join(d.root, '.agent-intent.json'));
       assert.throws(() => workingScenarios(d.root), /regular file/);
-      unlinkSync(join(d.root, '.intentdd.json'));
+      unlinkSync(join(d.root, '.agent-intent.json'));
       d.write('features/example.feature', 'Scenario: No feature\n');
       assert.throws(() => workingScenarios(d.root), /Gherkin/);
     } finally { d.close(); }

@@ -14,13 +14,13 @@ import { renderStaticReview } from '../src/lineage/static-review.js';
 const feature = 'Feature: Mobile\n  @first\n  Scenario: First\n    Given first promise\n  @second\n  Scenario: Second\n    Given second promise\n';
 const cli = fileURLToPath(new URL('../runtime/cli.cjs', import.meta.url));
 function project(run: (root: string) => void) {
-  const root = mkdtempSync(join(tmpdir(), 'intentdd-mobile-'));
+  const root = mkdtempSync(join(tmpdir(), 'agent-intent-mobile-'));
   try { mkdirSync(join(root, 'features')); writeFileSync(join(root, 'features/review.feature'), feature); report(root); run(root); }
   finally { rmSync(root, { recursive: true, force: true }); }
 }
 function report(root: string, runFailed = false) { saveReport(root, { version: 1, scenarios: workingScenarios(root), tests: [], runFailed }); }
 function lock(root: string) { return reportModel(root).accepted; }
-function bytes(root: string) { const p = join(root, 'intentdd.lock.json'); return existsSync(p) ? readFileSync(p, 'utf8') : null; }
+function bytes(root: string) { const p = join(root, 'agent-intent.lock.json'); return existsSync(p) ? readFileSync(p, 'utf8') : null; }
 
 describe('Static mobile approval protocol', () => {
   it('accepts only selected definitions and rejects replay', {tags:['mobile-selection', 'mobile-stale-review']}, () => project(root => {
@@ -131,7 +131,7 @@ describe('Mobile review CLI and offline files', () => {
 
 describe('Exported mobile selection events', () => {
   it('copies only the selected records, clears selection and resets restored pages without accepting', {tags:['mobile-copy-selection']}, async () => {
-    const root = mkdtempSync(join(tmpdir(), 'intentdd-mobile-events-'));
+    const root = mkdtempSync(join(tmpdir(), 'agent-intent-mobile-events-'));
     try {
       mkdirSync(join(root,'features')); writeFileSync(join(root,'features/review.feature'),feature); report(root);
       const review = createReview(root), before = bytes(root);
@@ -154,7 +154,7 @@ describe('Exported mobile selection events', () => {
   });
   for (const clipboard of ['missing','denied'] as const) {
     it('selects the exact current approval text when clipboard access is '+clipboard, {tags:['mobile-copy-fallback']}, async () => {
-      const root = mkdtempSync(join(tmpdir(), 'intentdd-mobile-events-'));
+      const root = mkdtempSync(join(tmpdir(), 'agent-intent-mobile-events-'));
       try {
         mkdirSync(join(root,'features')); writeFileSync(join(root,'features/review.feature'),feature); report(root);
         const review = createReview(root), d = new StaticReviewDriver(renderStaticReview(review).html, clipboard);

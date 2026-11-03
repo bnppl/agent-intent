@@ -14,14 +14,15 @@
     "build": "node scripts/build.mjs",
     "build:check": "node scripts/build.mjs --check",
     "typecheck": "tsc --noEmit",
-    "start": "node runtime/cli.cjs serve",
+    "start": "node runtime/cli.cjs start",
     "intent": "node runtime/cli.cjs",
     "test:acceptance": "node --import tsx node_modules/@cucumber/cucumber/bin/cucumber.js",
     "test:unit": "node --import tsx --test tests/*.test.ts",
     "test:lineage": "node --enable-source-maps --import tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./runtime/lineage-reporter.cjs --test-reporter-destination=test-lineage.html tests/*.test.ts",
     "test": "npm run typecheck && npm run build:check && npm run test:acceptance && npm run test:unit",
-    "stop": "node --import tsx scripts/stop.ts",
-    "pages:prepare": "node scripts/prepare-pages.mjs"
+    "stop": "node runtime/cli.cjs stop",
+    "pages:prepare": "node scripts/prepare-pages.mjs",
+    "serve": "node runtime/cli.cjs serve"
   },
   "dependencies": {
     "@babel/parser": "8.0.10",
@@ -34,5 +35,14 @@
     "esbuild": "0.28.2",
     "tsx": "4.23.15",
     "typescript": "7.0.2"
+  },
+  "files": [
+    "runtime/*.cjs",
+    ".agents/skills/agent-intent",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnppl/intent-dd.git"
   }
 }

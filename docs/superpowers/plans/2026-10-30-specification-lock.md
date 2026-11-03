@@ -10,7 +10,7 @@ acceptance and requested removal of the old integration from framework and tests
 - Extract filesystem/configuration/parsing utilities; remove old snapshot,
   annotation, signing, hook-installation and staged-review code and its tests.
 - Serve the report at both / and /lineage. Use --root for an explicit project.
-- Store accepted definitions in intentdd.lock.json; keep latest results local.
+- Store accepted definitions in agent-intent.lock.json; keep latest results local.
   Read the existing acceptance store until a human acceptance creates the lock.
 - Verify fresh report source, pending specifications and failing test outcomes.
 - Retain legacy configuration boundary fields in this checkout so its existing

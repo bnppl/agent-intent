@@ -10,7 +10,7 @@ in `docs/requirements/test-lineage.feature`; scope agreed in chat.
 reporter. Tests declare `{ tags: ['test-lineage'] }`; Gherkin declares
 `@test-lineage`. The reporter joins completed test events to scenarios and
 emits standalone HTML through Node's reporter destination option. Read feature
-roots from `.intentdd.json`, defaulting to `features` when absent.
+roots from `.agent-intent.json`, defaulting to `features` when absent.
 
 **Tech stack:** TypeScript, Node.js 24.19+ (native test tags), Cucumber, esbuild.
 

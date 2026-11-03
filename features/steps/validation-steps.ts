@@ -15,7 +15,7 @@ type ValidationWorld = {
 };
 function driver(w: ValidationWorld): PresentationDriver { assert.ok(w.project); return w.project; }
 function lockBytes(w: ValidationWorld): string | null {
-  const path = join(driver(w).root, 'intentdd.lock.json');
+  const path = join(driver(w).root, 'agent-intent.lock.json');
   return existsSync(path) ? readFileSync(path, 'utf8') : null;
 }
 function cli(w: ValidationWorld, command: string) {
@@ -26,13 +26,13 @@ function source(w: ValidationWorld): string { return readFileSync(join(driver(w)
 
 When('specification discovery encounters {string}', function(this: ValidationWorld, input: string) {
   const d = driver(this);
-  if (input === 'a root outside project') d.write('.intentdd.json', JSON.stringify({version:1, feature_roots:['../outside']}));
+  if (input === 'a root outside project') d.write('.agent-intent.json', JSON.stringify({version:1, feature_roots:['../outside']}));
   else if (input === 'a symlinked feature') {
     d.write('other.feature', source(this)); unlinkSync(join(d.root, 'features/example.feature'));
     symlinkSync('../other.feature', join(d.root, 'features/example.feature'));
   } else if (input === 'symlinked configuration') {
     d.write('config.json', JSON.stringify({version:1, feature_roots:['features']}));
-    symlinkSync('config.json', join(d.root, '.intentdd.json'));
+    symlinkSync('config.json', join(d.root, '.agent-intent.json'));
   } else if (input === 'malformed Gherkin') d.write('features/example.feature', 'Scenario: Missing feature\n');
   else assert.fail('Unknown input: ' + input);
   try { workingScenarios(d.root); } catch(error) { this.discoveryError = error; }
@@ -83,7 +83,7 @@ Then('both current Gherkin scenarios are printed without creating a report', fun
   assert.equal(this.result!.status, 0, String(this.result!.stderr));
   assert.match(String(this.result!.stdout), /Scenario: First specification/);
   assert.match(String(this.result!.stdout), /Scenario: Second specification/);
-  assert.equal(existsSync(join(driver(this).root, '.intentdd/lineage/latest.json')), false);
+  assert.equal(existsSync(join(driver(this).root, '.agent-intent/lineage/latest.json')), false);
 });
 When('its specification source changes without another run', function(this: ValidationWorld) {
   driver(this).write('features/example.feature', source(this).replace('the first promise', 'a changed promise'));
@@ -106,7 +106,7 @@ Then('verification reports a failed test run', function(this: ValidationWorld) {
 });
 When('a local acceptance baseline contains the first specification', async function(this: ValidationWorld) {
   const model = await driver(this).model();
-  driver(this).write('.intentdd/lineage/accepted.json', JSON.stringify({version:1, scenarios:[model.snapshot.scenarios[0]]}));
+  driver(this).write('.agent-intent/lineage/accepted.json', JSON.stringify({version:1, scenarios:[model.snapshot.scenarios[0]]}));
 });
 Then('the accepted specification is readable without creating a portable lock', async function(this: ValidationWorld) {
   assert.deepEqual((await driver(this).model()).accepted.map(s => s.name), ['First specification']);
@@ -115,10 +115,10 @@ Then('the accepted specification is readable without creating a portable lock', 
 When('I accept the second specification', async function(this: ValidationWorld) { assert.equal((await driver(this).accept('Second specification')).status, 200); });
 Then('the portable lock contains both specifications and is the authoritative acceptance baseline', async function(this: ValidationWorld) {
   assert.deepEqual(JSON.parse(lockBytes(this)!).scenarios.map((s: {name:string}) => s.name), ['First specification','Second specification']);
-  driver(this).write('.intentdd/lineage/accepted.json', JSON.stringify({version:1,scenarios:[]}));
+  driver(this).write('.agent-intent/lineage/accepted.json', JSON.stringify({version:1,scenarios:[]}));
   assert.equal((await driver(this).model()).accepted.length, 2);
 });
-When('the portable lock is invalid', function(this: ValidationWorld) { driver(this).write('intentdd.lock.json', 'null'); });
+When('the portable lock is invalid', function(this: ValidationWorld) { driver(this).write('agent-intent.lock.json', 'null'); });
 Then('reading acceptance rejects the invalid lock without replacing it', async function(this: ValidationWorld) {
   const response = await driver(this).request('/api/lineage');
   assert.equal(response.status, 409); assert.match(await response.text(), /Invalid lineage acceptance state/);

@@ -176,12 +176,12 @@ describe('Individual specification acceptance', () => {
     const d = new PresentationDriver();
     try {
       await d.acceptInitial();
-      const baseline = readFileSync(join(d.root, 'intentdd.lock.json'), 'utf8');
+      const baseline = readFileSync(join(d.root, 'agent-intent.lock.json'), 'utf8');
       d.write('features/example.feature', readFileSync(join(d.root, 'features/example.feature'), 'utf8')
         .replace('the first promise', 'a changed promise'));
       d.run(); d.run();
       assert.match(await d.page(), /data-change="modified"/);
-      assert.equal(readFileSync(join(d.root, 'intentdd.lock.json'), 'utf8'), baseline);
+      assert.equal(readFileSync(join(d.root, 'agent-intent.lock.json'), 'utf8'), baseline);
     } finally { await d.stop(); }
   });
 

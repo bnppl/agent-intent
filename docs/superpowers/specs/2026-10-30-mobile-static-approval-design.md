@@ -25,7 +25,7 @@ Use a versioned, structured text envelope with an explicit approval marker. Incl
 
 Import only records belonging to that review. Recompute and validate the review identifier against the current report and accepted baseline, validate every selected record, and verify that current specifications still match the report before writing. Reject malformed, empty, duplicate, unknown, altered or stale records with actionable errors. A regenerated report or changed baseline requires a fresh review when its bound data differs. Replaying an applied approval is rejected as stale.
 
-Validate the entire batch first, then atomically update intentdd.lock.json for only the selected entries, including explicit removals. A rejected batch changes nothing. Unselected entries retain their accepted definitions. Reuse the existing lock format and acceptance validation where possible.
+Validate the entire batch first, then atomically update agent-intent.lock.json for only the selected entries, including explicit removals. A rejected batch changes nothing. Unselected entries retain their accepted definitions. Reuse the existing lock format and acceptance validation where possible.
 
 Acceptance records agreement with specification meaning independently of test outcomes. Failed and not-run results remain visible. Import never marks tests passed or changes their results; verification continues to reject failing runs and pending specification acceptance under existing rules.
 

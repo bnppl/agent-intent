@@ -168,7 +168,7 @@ Then('the changes view contains only specifications awaiting acceptance', async 
 });
 Then('the workflow view explains reporting, individual acceptance, verification and mobile review', async function(this: PresentationWorld) {
   const html = await (await driver(this).request('/?view=workflow')).text();
-  assert.match(html, /intentdd\.lock\.json/);
+  assert.match(html, /agent-intent\.lock\.json/);
   assert.match(html, /npm run test:lineage/);
   assert.match(html, /npm run intent -- verify/);
   assert.match(html, /npm run intent -- review --output/);
@@ -251,7 +251,7 @@ Then('that specification is labelled {string}', async function(this: Presentatio
 });
 Given('a configured IDE template and a test path containing spaces and a hash', function(this: PresentationWorld) {
   const d = driver(this);
-  d.write('.intentdd.json', JSON.stringify({version:1, feature_roots:['features'],
+  d.write('.agent-intent.json', JSON.stringify({version:1, feature_roots:['features'],
     editor_url_template:'my-ide://open?file={encodedPath}&line={line}&column={column}'}));
   // The normal reporter entry point imports a test whose declaration is in the escaped path.
   d.write('a file #1.test.mjs', "import {it} from 'node:test';\nit('supports a promise', {tags:['first']}, () => {});");
@@ -263,16 +263,16 @@ Then('local and standalone source links use the configured template and escaped 
   assert.ok((await d.page()).includes(href)); assert.ok(d.html().includes(href));
 });
 Given('the IDE template is {word}', function(this: PresentationWorld, template: string) {
-  driver(this).write('.intentdd.json', JSON.stringify({version:1, feature_roots:['features'], editor_url_template:template}));
+  driver(this).write('.agent-intent.json', JSON.stringify({version:1, feature_roots:['features'], editor_url_template:template}));
 });
 Given('the IDE template is a non-string value', function(this: PresentationWorld) {
-  driver(this).write('.intentdd.json', JSON.stringify({version:1, feature_roots:['features'], editor_url_template:42}));
+  driver(this).write('.agent-intent.json', JSON.stringify({version:1, feature_roots:['features'], editor_url_template:42}));
 });
 When('I request the report with that configuration', async function(this: PresentationWorld) {
   // Capture a valid report first; invalid editor settings are tested by the read request.
-  const d = driver(this), configuration = readFileSync(join(d.root, '.intentdd.json'), 'utf8');
-  d.write('.intentdd.json', JSON.stringify({version:1, feature_roots:['features']})); d.run();
-  d.write('.intentdd.json', configuration);
+  const d = driver(this), configuration = readFileSync(join(d.root, '.agent-intent.json'), 'utf8');
+  d.write('.agent-intent.json', JSON.stringify({version:1, feature_roots:['features']})); d.run();
+  d.write('.agent-intent.json', configuration);
 });
 Then('the report rejects the invalid IDE template', async function(this: PresentationWorld) {
   assert.equal((await driver(this).request('/')).status, 409);
@@ -284,7 +284,7 @@ Then('the collapsed scenario row contains its acceptance button', async function
 
 Given('a stop request for this project', function() {});
 Then('only an Agent Intent serve process in this project is eligible to stop', async function() {
-  const { isProjectService } = await import('../../scripts/stop.js');
+  const { isProjectService } = await import('../../src/workflow.js');
   assert.equal(isProjectService('/project', '/project', 'node runtime/cli.cjs serve'), true);
   assert.equal(isProjectService('/project', '/other', 'node runtime/cli.cjs serve'), false);
   assert.equal(isProjectService('/project', '/project', 'node other-server.js'), false);

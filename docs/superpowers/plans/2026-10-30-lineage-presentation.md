@@ -7,7 +7,7 @@ green/red result labels and separate blue/amber/purple change labels. Keep
 native keyboard-accessible disclosure controls. Do not use colour alone.
 
 The Node reporter must include failed results, preserve the runner's nonzero
-exit status, and save a structured latest report under `.intentdd/lineage/`.
+exit status, and save a structured latest report under `.agent-intent/lineage/`.
 Store accepted specification definitions separately in that ignored directory.
 Only a human action in the local web interface advances an individual baseline;
 generating reports never accepts changes. An initial specification is Added.

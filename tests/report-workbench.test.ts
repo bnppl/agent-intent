@@ -8,7 +8,7 @@ it('navigates pending changes without mutating acceptance and handles an empty r
   const d = new PresentationDriver();
   try {
     await d.acceptInitial();
-    const lock = () => readFileSync(join(d.root, 'intentdd.lock.json'), 'utf8');
+    const lock = () => readFileSync(join(d.root, 'agent-intent.lock.json'), 'utf8');
     const before = lock();
     let html = await (await d.request('/?view=changes')).text();
     assert.match(html, /No specification changes awaiting acceptance/);
