@@ -4,11 +4,13 @@ import { editorOptions } from './core/editor.js';
 import { resolve } from 'node:path';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { IntentError } from './core/files.js';
+import { briefFile, initialiseBrief, readBrief } from './core/brief.js';
 import { serve } from './server.js';
 import { reportModel, verifyReport } from './lineage/state.js';
 import { workingScenarios } from './lineage/load.js';
 import { definitionText } from './lineage/definition.js';
 import { createReview, importApprovals } from './lineage/review.js';
+import { importDecisionProposals, importMutationReport } from './decisions.js';
 import { renderStaticReview } from './lineage/static-review.js';
 
 async function main(argv: string[]): Promise<number> {
@@ -21,23 +23,31 @@ async function main(argv: string[]): Promise<number> {
       const value = argv[++i]; if (!value || value.startsWith('--')) throw new IntentError(arg + ' requires a path');
       if (arg === '--output') output = value; else inputFile = value;
     }
-    else if (arg === '--help' || arg === '-h') { console.log('Agent Intent\nUsage: agent-intent [--root PATH] <start [--port PORT] | stop [--port PORT] | run | serve [--port PORT] | verify | status | spec | review [--output PREFIX] | approve [--file PATH]>\nStart runs configured checks and leaves a background server. Run checks without a server with run. Stop and status accept --port PORT.\nReview writes PREFIX.html and PREFIX.txt (default: agent-intent-review). Approve reads exact approval envelopes from a file or stdin.'); return 0; }
-    else if (!command && ['start', 'stop', 'run', 'serve', 'verify', 'status', 'spec', 'review', 'approve'].includes(arg)) command = arg;
+    else if (arg === '--help' || arg === '-h') { console.log('Agent Intent\nUsage: agent-intent [--root PATH] <init | start [--port PORT] | stop [--port PORT] | run | serve [--port PORT] | verify | status | spec | review [--output PREFIX] | approve [--file PATH] | decisions --file PATH | mutations --file PATH>\nInit creates an intent.md project brief. Serve opens the brief and any available lineage report.\nStart runs configured checks and leaves a background server. Run checks without a server with run. Stop and status accept --port PORT.\nReview writes PREFIX.html and PREFIX.txt (default: agent-intent-review). Approve reads exact approval envelopes from a file or stdin.'); return 0; }
+    else if (!command && ['init', 'start', 'stop', 'run', 'serve', 'verify', 'status', 'spec', 'review', 'approve', 'decisions', 'mutations'].includes(arg)) command = arg;
     else throw new IntentError('Unknown argument: ' + arg);
   }
-  if (!command) throw new IntentError('Choose start, stop, run, serve, verify, status, spec, review, or approve (--help for usage)');
+  if (!command) throw new IntentError('Choose init, start, stop, run, serve, verify, status, spec, review, or approve (--help for usage)');
   if (output !== undefined && command !== 'review') throw new IntentError('--output is only valid with review');
-  if (inputFile !== undefined && command !== 'approve') throw new IntentError('--file is only valid with approve');
+  if (inputFile !== undefined && !['approve', 'decisions', 'mutations'].includes(command)) throw new IntentError('--file is only valid with approve, decisions or mutations');
   root = resolve(root);
   if (['start', 'stop', 'status'].includes(command) && port === 0) throw new IntentError('Invalid --port: use 1–65535 for managed servers');
-  if (command === 'start') await startProject(root, port);
+  if (command === 'init') {
+    initialiseBrief(root);
+    console.log(`Created ${briefFile}. Fill in the two sections, then run agent-intent serve.`);
+  } else if (command === 'start') await startProject(root, port);
   else if (command === 'stop') stopProject(root, port);
   else if (command === 'run') await runProject(root);
   else if (command === 'review') {
-    const files = renderStaticReview(createReview(root), editorOptions(root)), prefix = resolve(output ?? 'agent-intent-review');
+    const files = renderStaticReview(createReview(root), editorOptions(root), readBrief(root)), prefix = resolve(output ?? 'agent-intent-review');
     writeFileSync(prefix + '.html', files.html, { flag: 'wx' });
     writeFileSync(prefix + '.txt', files.text, { flag: 'wx' });
     console.log('Review files: ' + prefix + '.html and ' + prefix + '.txt. No specifications accepted.');
+  } else if (command === 'decisions' || command === 'mutations') {
+    if (!inputFile) throw new IntentError(command + ' requires --file PATH');
+    const value: unknown = JSON.parse(readFileSync(resolve(inputFile), 'utf8'));
+    const count = command === 'mutations' ? importMutationReport(root, value) : importDecisionProposals(root, value);
+    console.log('Imported ' + count + ' decision proposal(s). No human decisions or specifications accepted.');
   } else if (command === 'approve') {
     if (!inputFile && process.stdin.isTTY) throw new IntentError('Pipe pasted approval text to stdin or supply --file PATH');
     const count = importApprovals(root, readFileSync(inputFile ? resolve(inputFile) : 0, 'utf8'));

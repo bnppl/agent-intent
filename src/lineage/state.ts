@@ -2,11 +2,13 @@ import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, renameSync
 import { join } from 'node:path';
 import { sha256 } from '../core/gherkin.js';
 import { hasSymlinkParent, IntentError, object, safePath } from '../core/files.js';
+import { validExecution } from './evidence.js';
+import type { ScenarioExecution } from './evidence.js';
 import { workingScenarios } from './load.js';
 import type { LineageScenario, LineageTest } from './report.js';
 
 export interface StoredScenario extends LineageScenario { key: string; definition: string; fingerprint: string }
-export interface ReportSnapshot { version: 1; scenarios: StoredScenario[]; tests: LineageTest[]; runFailed?: boolean }
+export interface ReportSnapshot { version: 1; scenarios: StoredScenario[]; tests: LineageTest[]; executions?: ScenarioExecution[]; runFailed?: boolean }
 export interface ReportModel { snapshot: ReportSnapshot; accepted: StoredScenario[]; revision: string }
 export interface AcceptSpecification { revision: string; key: string; expectedAcceptance: string | null }
 
@@ -62,18 +64,27 @@ function validTestSource(value: unknown): boolean {
   try { safePath(value.path); return true; } catch { return false; }
 }
 
-export function reportModel(root: string): ReportModel {
+export function latestReport(root: string): ReportModel | undefined {
   const value = read(root, 'latest');
+  if (value === undefined) return undefined;
   if (!object(value) || value.version !== 1 || !Array.isArray(value.scenarios) || !value.scenarios.every(validScenario)
     || (value.runFailed !== undefined && typeof value.runFailed !== 'boolean')
+    || (value.executions !== undefined && (!Array.isArray(value.executions) || !value.executions.every(validExecution)))
     || !Array.isArray(value.tests) || !value.tests.every(test => object(test) && typeof test.description === 'string'
       && Array.isArray(test.tags) && test.tags.every(tag => typeof tag === 'string')
+      && (test.logs === undefined || (Array.isArray(test.logs) && test.logs.every(log => typeof log === 'string')))
       && (test.source === undefined || validTestSource(test.source))
       && (test.status === 'passed' || test.status === 'failed'))) {
     throw new IntentError('Generate a lineage report first: npm run test:lineage');
   }
   const snapshot = value as unknown as ReportSnapshot;
   return { snapshot, accepted: acceptedScenarios(root), revision: sha256(Buffer.from(JSON.stringify(snapshot))) };
+}
+
+export function reportModel(root: string): ReportModel {
+  const model = latestReport(root);
+  if (!model) throw new IntentError('Generate a lineage report first: npm run test:lineage');
+  return model;
 }
 
 export function acceptSpecification(root: string, request: AcceptSpecification): void {

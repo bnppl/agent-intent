@@ -1,6 +1,5 @@
 import { After, Given, When, Then } from '@cucumber/cucumber';
-import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { assert, logEvidence, spawnWithEvidence } from '../support/evidence.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,7 +15,7 @@ interface MobileWorld { mobile?: PresentationDriver; copiedApproval?: string }
 const cli = fileURLToPath(new URL('../../runtime/cli.cjs', import.meta.url));
 function run(w: MobileWorld, args: string[], input?: string) {
   assert.ok(w.mobile);
-  return spawnSync(process.execPath, [cli, ...args], { cwd: w.mobile.root, encoding: 'utf8', input });
+  return spawnWithEvidence(process.execPath, [cli, ...args], { cwd: w.mobile.root, encoding: 'utf8', input });
 }
 Given('a mobile review project with two proposed specifications', function (this: MobileWorld) {
   this.mobile = new PresentationDriver(); this.mobile.fixtures(); this.mobile.run();
@@ -36,6 +35,7 @@ Then('no specifications have been accepted', function (this: MobileWorld) {
 Given('a copied approval for the first specification', function (this: MobileWorld) {
   const review = createReview(this.mobile!.root);
   this.copiedApproval = approvalText(review.reviewId, [review.records.find(r => r.name === 'First specification')!]);
+  logEvidence('Approval fixture', 'Copied the approval for First specification in the temporary project.');
 });
 When('I paste an approval for the first specification', function (this: MobileWorld) {
   const review = createReview(this.mobile!.root);
@@ -62,6 +62,7 @@ function acceptanceBytes(w: MobileWorld): string | null {
   return existsSync(path) ? readFileSync(path, 'utf8') : null;
 }
 When('a pasted approval batch is {string}', function(this: MobileValidationWorld, problem: string) {
+  logEvidence('Approval batch fixture', problem);
   const review = createReview(this.mobile!.root), record = review.records[0];
   let text = approvalText(review.reviewId, [record]);
   if (problem === 'empty') text = approvalText(review.reviewId, []);
@@ -82,6 +83,7 @@ Then('importing that batch fails without changing acceptance', function(this: Mo
   assert.equal(acceptanceBytes(this), this.beforeAcceptance);
 });
 When('the mobile review becomes stale through {string}', function(this: MobileValidationWorld, change: string) {
+  logEvidence('Review invalidation', change);
   const d = this.mobile!;
   if (change === 'source') d.write('features/example.feature', readFileSync(join(d.root, 'features/example.feature'), 'utf8').replace('the first promise','a changed promise'));
   else if (change === 'report') saveReport(d.root, {...reportModel(d.root).snapshot, runFailed:true});
@@ -107,6 +109,7 @@ When('I import its removal approval', function(this: MobileWorld) {
 });
 When('the reported test run has failed', function(this: MobileWorld) {
   const root = this.mobile!.root; saveReport(root, {...reportModel(root).snapshot, runFailed:true});
+  logEvidence('Report fixture', 'Saved the snapshot with runFailed set to true.');
 });
 Then('the test run remains failed and verification fails', function(this: MobileWorld) {
   assert.equal(reportModel(this.mobile!.root).snapshot.runFailed, true);
@@ -154,6 +157,7 @@ Then('the approval text is empty and copying is disabled', function(this: Mobile
 });
 When('a page is restored after selecting a change', async function(this: MobileValidationWorld) {
   await this.staticReview!.select(1); await this.staticReview!.restore();
+  logEvidence('Review interaction', 'Selected the second change and dispatched pageshow.');
 });
 When('I copy a selected exported approval with clipboard access {string}', async function(this: MobileValidationWorld, access: string) {
   assert.ok(access === 'missing' || access === 'denied');

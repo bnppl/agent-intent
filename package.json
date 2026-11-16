@@ -18,11 +18,12 @@
     "intent": "node runtime/cli.cjs",
     "test:acceptance": "node --import tsx node_modules/@cucumber/cucumber/bin/cucumber.js",
     "test:unit": "node --import tsx --test tests/*.test.ts",
-    "test:lineage": "node --enable-source-maps --import tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./runtime/lineage-reporter.cjs --test-reporter-destination=test-lineage.html tests/*.test.ts",
-    "test": "npm run typecheck && npm run build:check && npm run test:acceptance && npm run test:unit",
+    "test:lineage": "node scripts/test-lineage.mjs",
+    "test": "npm run test:acceptance && npm run test:unit",
     "stop": "node runtime/cli.cjs stop",
     "pages:prepare": "node scripts/prepare-pages.mjs",
-    "serve": "node runtime/cli.cjs serve"
+    "serve": "node runtime/cli.cjs serve",
+    "check:static": "npm run typecheck && npm run build:check"
   },
   "dependencies": {
     "@babel/parser": "8.0.10",
@@ -33,12 +34,15 @@
     "@cucumber/cucumber": "13.3.0",
     "@types/node": "24.19.2",
     "esbuild": "0.28.2",
+    "playwright": "^1.65.1",
     "tsx": "4.23.15",
     "typescript": "7.0.2"
   },
   "files": [
     "runtime/*.cjs",
     ".agents/skills/agent-intent",
+    ".agents/skills/intent-spec",
+    ".agents/skills/intent-implement",
     "README.md"
   ],
   "repository": {

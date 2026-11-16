@@ -18,6 +18,9 @@ export function groupRows(rows: readonly Row[]): string {
 
 /** Move existing nodes so their disclosure state and event handlers survive acceptance. */
 export function regroup(root: HTMLElement): void {
+  if (root.hasAttribute('data-stack-rows')) return;
+  const requirementRows = [...root.querySelectorAll<HTMLElement>('[data-requirement-rows]')];
+  if (requirementRows.length) { requirementRows.forEach(regroup); return; }
   const rows = [...root.querySelectorAll<HTMLElement>('section[data-result][data-change]')];
   const groups: HTMLElement[] = [];
   function group(kind: 'run' | 'change', state: string, label: string, count: number): HTMLElement {

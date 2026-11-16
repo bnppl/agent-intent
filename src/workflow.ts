@@ -69,7 +69,7 @@ export async function startProject(root: string, port: number): Promise<void> {
   if (hasSymlinkParent(root, log)) throw new IntentError('Server log must not use symlinks');
   mkdirSync(resolve(root, '.agent-intent'), { recursive: true });
   const fd = openSync(log, 'a');
-  const child = spawn(process.execPath, [resolve(process.argv[1]), 'serve', '--root', root, '--port', String(port)], {
+  const child = spawn(process.execPath, [realpathSync(process.argv[1]), 'serve', '--root', root, '--port', String(port)], {
     cwd: root, detached: true, stdio: ['ignore', fd, fd, 'ipc'],
   });
   closeSync(fd);

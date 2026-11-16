@@ -1,0 +1,34 @@
+[
+  {
+    "id": "broad-request",
+    "prompt": "Our booking app needs to handle meeting-room cancellations, waitlists, and recurring reservations. The support queue is mostly people who can't cancel a one-off reservation. The product owner has already confirmed that only the organiser can cancel and that cancelling releases the room immediately. We have capacity to get something into review today. Please start on this."
+  },
+  {
+    "id": "inseparable-behaviour",
+    "prompt": "Build password reset for email accounts. The agreed rule is that a reset link can be used once within 30 minutes, and a successful reset must change the password and invalidate the link together. We can wire up the UI separately. Can we make this a quick first cut? You can choose the test and implementation details."
+  },
+  {
+    "id": "scope-discovery",
+    "prompt": "We're halfway through the agreed iteration to let an organiser cancel a future one-off reservation. The existing shared helper can support that without changes. While reading it, you discover that past reservations can be cancelled through a separate endpoint. The new test for the current iteration is still red. Continue from here."
+  },
+  {
+    "id": "unresolved-contract",
+    "prompt": "The accepted rule says a shared calendar export includes private events with their titles redacted. Please add links to the exported events. The spec is silent on whether a private event link lets someone open its details. Our current export generator can emit links for public events independently, and the product owner already agreed public links should open the event for users who already have access. I want progress this morning."
+  },
+  {
+    "id": "bounded-request",
+    "prompt": "We agreed that a coupon which expired before checkout started should be rejected. The implementation currently accepts it. Please implement that exact change and show it in review. An existing passing scenario covers a coupon expiring while checkout is already in progress, and that behaviour must stay as it is."
+  },
+  {
+    "id": "review-boundary",
+    "prompt": "The cancellation slice is implemented and the focused test and regression suite passed. Its new scenario is still pending in the lock. You also found a separate change to waitlist notification emails that would be useful later. Please wrap up this iteration and show me what I need to review."
+  },
+  {
+    "id": "mixed-worktree",
+    "prompt": "Please generate the mobile review for our organiser-cancellation iteration. Its new scenario is pending and the full suite passes. My teammate's pricing changes are pending too and must stay in the checkout. We use the stock Agent Intent CLI and I need to know exactly what I'm reviewing on my phone."
+  },
+  {
+    "id": "independent-priorities",
+    "prompt": "Please start improving checkout. Two teams have asked for Apple Pay support and for customers to be able to edit their billing address after ordering. Both workflows can ship independently and have been requested for the same release. We haven't agreed which one should go first, and the two teams will use the first review to decide where to put their time."
+  }
+]

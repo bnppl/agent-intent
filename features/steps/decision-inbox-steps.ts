@@ -1,0 +1,18 @@
+import { Given, When, Then, After } from '@cucumber/cucumber';
+import { DecisionInboxDriver } from '../support/decision-inbox-driver.js';
+let driver: DecisionInboxDriver | undefined;
+Given('a project with a proposed material-ordering decision', () => { driver = new DecisionInboxDriver(); driver.proposals(); });
+When('I open the separate decision inbox', () => driver!.open());
+Then('the decision is grouped by journey and component with its evidence', () => driver!.grouped());
+When('I classify the decision as flexible with a scope and rationale', () => driver!.classify());
+Then('the decision persists independently of specification acceptance', () => driver!.independent());
+Then('other unresolved decisions remain visible', () => driver!.unresolved());
+When('the proposal changes after I open the decision inbox', async () => { await driver!.open(); driver!.change(); });
+Then('my outdated classification is rejected without changing decisions', () => driver!.stale());
+Given('a project with a mutation report containing a survivor and a killed mutant', () => { driver = new DecisionInboxDriver(); driver.mutations(); });
+When('I import the mutation report into the decision inbox', () => driver!.importMutations());
+Then('only the survivor needs a human decision and retains its mutation evidence', () => driver!.mutationEvidence());
+Then('importing the same evidence preserves decisions but changed evidence reopens review', () => driver!.reimport());
+When('I import a batch containing duplicate decision identifiers', () => driver!.duplicates());
+Then('the entire batch is rejected and the existing inbox is preserved', () => driver!.preserved());
+After(async () => { if (driver) { await driver.close(); driver = undefined; } });

@@ -23,6 +23,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: npm run check:static
       - run: npm test
       - run: npm run pages:prepare
       - uses: actions/configure-pages@v5

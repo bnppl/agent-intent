@@ -1,3 +1,5 @@
+import { lineageIds } from './supports.js';
+import type { ProjectBrief } from '../core/brief.js';
 import type { EditorOptions } from '../core/editor.js';
 import { definitionText } from './definition.js';
 import { renderLineage } from './report.js';
@@ -58,9 +60,9 @@ pre { max-width: 100%; }
 @media(max-width: 650px) { .approval-panel { padding: 12px; } }
 `;
 
-export function renderStaticReview(review: StaticReview, editor?: EditorOptions): { html: string; text: string } {
+export function renderStaticReview(review: StaticReview, editor?: EditorOptions, brief?: ProjectBrief): { html: string; text: string } {
   const { snapshot, accepted } = review.model;
-  let html = renderLineage(snapshot.scenarios, snapshot.tests, { editor, accepted, runFailed: snapshot.runFailed, staticReview: true });
+  let html = renderLineage(snapshot.scenarios, snapshot.tests, { brief, editor, accepted, runFailed: snapshot.runFailed, executions: snapshot.executions, staticReview: true });
   const panel = `<aside class="approval-panel" aria-label="Prepare approvals">
 <h2>Prepare your approvals</h2>
 <p>Expand specifications below to review the accepted and proposed definitions. Select changes individually, then return here.</p>
@@ -77,7 +79,7 @@ export function renderStaticReview(review: StaticReview, editor?: EditorOptions)
   // Escaping '<' prevents names containing closing script tags from escaping the data block.
   const data = JSON.stringify({ reviewId: review.reviewId, records: review.records }).replaceAll('<', '\\u003c');
   html = html.replace('</head>', `<style>${styles}</style></head>`)
-    .replace('<main>', '<main>\n' + panel)
+    .replace(brief ? '</main>' : '<main>', brief ? panel + '</main>' : '<main>\n' + panel)
     .replace('</body>', () => `<script id="review-data" type="application/json">${data}</script><script>${client}</script></body>`);
   const lines = ['Agent Intent — mobile specification review', 'Review ID: ' + review.reviewId,
     'Review before copying. Copy only the complete approval blocks you authorise.',
@@ -88,13 +90,13 @@ export function renderStaticReview(review: StaticReview, editor?: EditorOptions)
   for (const record of review.records) {
     const previous = accepted.find(s => s.key === record.key);
     const proposed = snapshot.scenarios.find(s => s.key === record.key);
-    const related = proposed ? snapshot.tests.filter(t => proposed.tags.some(tag => t.tags.includes(tag.slice(1)))) : [];
+    const related = proposed ? snapshot.tests.filter(t => lineageIds(proposed.tags).some(tag => t.tags.includes(tag))) : [];
     lines.push('='.repeat(48), record.name + ' — ' + record.path,
       'Change: ' + (record.proposed === null ? 'REMOVED' : previous ? 'MODIFIED' : 'ADDED'),
       'Previously accepted:', previous ? definitionText(previous.definition) : '(not previously accepted)',
       'Proposed:', proposed ? definitionText(proposed.definition) : '(removed)', 'Supporting tests:',
       ...related.map(t => (t.status ?? 'passed').toUpperCase() + ': ' + t.description + ' [' +
-        t.tags.filter(tag => proposed!.tags.includes('@' + tag)).join(', ') + ']'),
+        t.tags.filter(tag => lineageIds(proposed!.tags).includes(tag)).join(', ') + ']'),
       ...(related.length ? [] : ['Not run: no associated unit tests ran with a matching lineage ID.']),
       '', 'COPY ONLY IF YOU APPROVE THIS SPECIFICATION ' + (record.proposed === null ? 'REMOVAL' : 'CHANGE') + ':',
       approvalText(review.reviewId, [record]), '');

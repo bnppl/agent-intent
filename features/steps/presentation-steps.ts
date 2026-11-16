@@ -1,5 +1,5 @@
 import { After, Given, Then, When } from '@cucumber/cucumber';
-import assert from 'node:assert/strict';
+import { assert } from '../support/evidence.js';
 import { readFileSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import type { IntentWorld } from '../hooks.js';

@@ -3,6 +3,21 @@
 Use this workflow when the user wants their agent to manage requirements, tests,
 reports or the review service in a project consuming Agent Intent.
 
+## Non-functional requirements
+
+Non-functional requirements do not need Gherkin specifications or unit tests.
+Enforce REST conventions, coding standards, formatting and type safety with
+appropriate tools. Provide `npm run check:static` as the aggregate command for
+all installed static checks and add future static tools to that command.
+Preserve individual tool commands for focused diagnostics.
+
+Configure the aggregate command once in `.agent-intent.json` checks. Keep it
+separate from behaviour test commands and lineage generation. A nonzero static
+check exits the workflow; report its diagnostics without inventing a scenario,
+test result or acceptance record. For non-functional-only work, run the relevant
+tooling checks without creating specifications or unit tests. Functional API
+behaviour and user journeys still use the executable-example workflow.
+
 ## Establish the project commands
 
 Inspect the project's scripts, runtime version and tests. Install the prebuilt
@@ -19,12 +34,18 @@ commands in `.agent-intent.json`, adapting this example to the project's checks:
   "version": 1,
   "feature_roots": ["features"],
   "checks": [
+    ["npm", "run", "check:static"],
     ["npm", "run", "build"],
     ["npm", "test"],
     ["npm", "run", "test:lineage"]
   ]
 }
 ```
+
+Create `check:static` from the project's installed tools, such as REST linting,
+type checking, formatting checks and generated-artifact validation. A check that
+compares generated artifacts must run after the build that produces them. Keep
+`npm test` for functional tests and preserve existing check dependencies.
 
 Checks are executable/argument arrays, run in order without a shell. They execute
 with user permissions; inspect configuration before running it. A failed check
@@ -44,10 +65,9 @@ An optional Node test runner script is:
 Only add the real-test command once its discovery path matches actual tests.
 Prebuilt installations do not need build hooks. Preserve the project's test loader, discovery paths and
 existing checks. TypeScript tests may need the project's `--import tsx` setup.
-The lineage reporter consumes Node test events: do not attach it directly to
-Jest, Vitest or Cucumber and claim their results are recorded. Retain those
-suites and explain any additional Node supporting-test suite or integration
-needed. Do not silently migrate an established test framework.
+The lineage reporter consumes Node test events and optionally imports Cucumber
+messages for end-to-end evidence. Jest and Vitest need separate integrations.
+Preserve the established test suites and their results.
 
 Keep `.agent-intent.json` as a regular project file with
 `{"version":1,"feature_roots":["features"]}` when these are the intended roots.
@@ -55,6 +75,31 @@ Ensure the roots exist and do not link the tool's own feature directory into
 them. Ignore `.agent-intent/lineage/` and `test-lineage.html` in Git; preserve the
 human-owned `agent-intent.lock.json`. If legacy `.intentdd` names exist, follow
 the linked tool README's migration guidance and preserve their contents.
+
+## Capture Cucumber step evidence
+
+Emit text evidence from the step that performs the action or assertion. For
+example, log the HTTP request and response around the awaited call, then log the
+status comparison before asserting it. Use Cucumber's `this.log(text)` or
+`this.attach(text, 'text/plain')`. Shared protocol and assertion helpers should
+write to the active step. Capture stdout and stderr from the command under test
+along with the exit status. Redact secrets and bound payloads before attachment.
+
+1. Run the project's existing Cucumber command with an additional
+   `--format message:PATH`, where `PATH` is a fresh NDJSON file in a private
+   temporary directory. Save its exit status.
+2. Run the Node lineage reporter with `AGENT_INTENT_CUCUMBER_MESSAGES` set to the
+   absolute message path and `AGENT_INTENT_CUCUMBER_ROOT` set to the canonical
+   project root (for example, `pwd -P`). Generate the report even when Cucumber
+   failed. Keep the overall command failing if either suite fails.
+3. Remove the temporary message file after the report run. Open a scenario and
+   expand a step in **Gherkin specification** to verify the evidence.
+   Backgrounds, outline examples and retries retain their separate step logs.
+
+The report reads completed message streams and checks that the executed feature
+source still matches the project. Give each report run its own message file.
+The standalone HTML, local workbench and mobile HTML include this evidence.
+Review captured text before sharing reports.
 
 ## Requirements-only review
 

@@ -22,6 +22,40 @@ The lockfile pins the Git commit. To install a specific revision, append
 `#COMMIT` to the GitHub dependency. No tool build is needed in your project.
 The package provides the CLI and the Node test lineage reporter.
 
+## Start with a project brief
+
+```sh
+npx agent-intent init
+# Fill in intent.md, then open the URL printed by serve.
+npx agent-intent serve
+```
+
+Replace the comments in `intent.md` with your project's intent. Under
+**Problem statement**, write a short paragraph about the problem, who has it,
+and what you want to improve. Under **High-level requirements**, add at least
+one hyphen bullet. Use one sentence per piece of functionality or user journey.
+Keep the two section headings so Agent Intent can read the brief.
+
+The **Specifications** view shows both levels before any application code,
+Gherkin scenarios, or test results exist. Refresh the page after editing the brief.
+Once you have a lineage report, the brief appears above the specifications and
+their supporting tests. `init` preserves an existing `intent.md`.
+
+## Non-functional requirements and static checks
+
+Non-functional requirements do not need Gherkin specifications or unit tests.
+Enforce REST design conventions, coding standards, formatting and type safety
+with tooling. Use `npm run check:static` as the single command for all project
+static checks, and add future static tools there. Keep `npm test` for functional
+behaviour and keep static checker output separate from specification lineage
+and acceptance. A non-functional-only change is verified by its tooling checks.
+
+In this checkout, `check:static` runs TypeScript checking and generated-runtime
+freshness validation. Run `npm run build` first when runtime source changed.
+Consuming projects define the same command using their own installed tools.
+
+## Add executable specifications and tests
+
 Add `.agent-intent.json` in your project root, adapting commands to your actual
 build and tests:
 
@@ -30,6 +64,7 @@ build and tests:
   "version": 1,
   "feature_roots": ["features"],
   "checks": [
+    ["npm", "run", "check:static"],
     ["npm", "run", "build"],
     ["npm", "test"],
     ["npm", "run", "test:lineage"]
@@ -54,8 +89,8 @@ For Node's test runner, an example optional script is:
 ```
 
 Preserve your project's loaders and discovery paths. This reporter consumes Node
-test events; Jest, Vitest and Cucumber require their own integration, and running
-them does not automatically populate lineage. Specifications without executed
+test events. For Cucumber, add the message formatter to capture step evidence
+alongside Node results. Jest and Vitest need separate integrations. Specifications without executed
 related tests remain **Not run**. Ignore `.agent-intent/lineage/`,
 `.agent-intent/server-*.log` and `test-lineage.html` in Git. Keep the human-owned
 `agent-intent.lock.json`.
@@ -76,7 +111,7 @@ Your application's `npm start` is yours to define.
 npx agent-intent run                 # checks and fresh evidence, then exit (CI)
 npx agent-intent status              # report and server PID/URL (null if stopped)
 npx agent-intent stop                # stop only this project's server
-npx agent-intent serve               # foreground server using existing evidence
+npx agent-intent serve               # foreground server for the brief and available evidence
 npx agent-intent start --port 9000    # use the same port for status and stop
 ```
 
@@ -89,10 +124,16 @@ ownership. Another project's listener is never reused or stopped. Logs are at
 
 ## Develop Agent Intent itself
 
+The local-consumer workflow requirements live in
+`features/local_consumer_workflow.feature`, with supporting tests in
+`tests/local-consumer-workflow.test.ts` and `tests/packaged-workflow.test.ts`.
+They use temporary consuming projects and run with this repository's checks.
+Toybox's report covers its game requirements from `intent.md`.
+
 In this repository, run `npm ci`, `npm run build`, then
-`npm run intent -- start`. Its configured checks build both runtimes, run the full
-test suite and generate lineage evidence. `npm start` and `npm stop` are optional
-shortcuts only in this checkout. Source changes must include both generated bundles.
+`npm run intent -- start`. Its configured checks build both runtimes, run static
+checks and functional tests, and generate lineage evidence. `npm start` and
+`npm stop` are optional shortcuts only in this checkout. Source changes must include both generated bundles.
 
 Open the printed URL, normally [http://127.0.0.1:8765](http://127.0.0.1:8765).
 The home page and `/lineage` show the same report.
@@ -122,6 +163,24 @@ node /path/to/runtime/cli.cjs --root /path/to/project spec
 failing test outcomes, and specification changes awaiting acceptance. A scenario
 without executed related tests remains **Not run**; verification does not claim
 coverage or rerun tests.
+
+## Inspect end-to-end step evidence
+
+In this checkout, `npm run test:lineage` runs Cucumber and Node tests, then
+generates the report even if a Cucumber scenario fails. Expand a scenario and
+open a step in **Gherkin specification** to inspect its HTTP requests and
+responses, CLI results and assertion comparisons. Each outline example and
+retry has its own rows. The same views appear in the local workbench, standalone
+HTML and mobile HTML review.
+
+For another project, attach evidence in the executing glue with Cucumber
+`this.log(text)` or `this.attach(text, 'text/plain')`. Add
+`--format message:PATH` to the Cucumber command and pass that run's absolute
+message path to the Node reporter as `AGENT_INTENT_CUCUMBER_MESSAGES`.
+Set `AGENT_INTENT_CUCUMBER_ROOT` to the canonical project root. Use a fresh
+temporary file for each run and preserve both suites' exit statuses.
+See [the project workflow](.agents/skills/agent-intent/references/project-workflow.md#capture-cucumber-step-evidence)
+for the full setup. Use synthetic data and redact secrets before logging.
 
 ## Link specifications and tests
 
@@ -311,3 +370,201 @@ workflow run. In repository **Settings → Pages → Build and deployment**, sel
 Jekyll. Only that documentation output is uploaded; reports, approval envelopes
 and local project state are excluded. The hosted site documents the framework;
 run the CLI locally to generate reports and review specification changes.
+
+## Link specifications to high-level requirements
+
+Give requirements stable IDs in `intent.md`:
+
+```markdown
+- **REQ-001** Provide a choice of building toys.
+```
+
+Use `@req-001` on the corresponding Gherkin Feature, Rule or Scenario.
+The last requirement tag wins, so a scenario tag overrides an inherited tag.
+Use one unique ID per requirement and one effective requirement per scenario.
+The specifications view nests scenarios under requirements, preserving test-result
+and acceptance groups within each requirement. Requirements with no specifications,
+legacy bullets without IDs and specifications with missing or unknown links remain
+visible. Changing a requirement sentence preserves its link when its ID stays the same.
+Existing scenario lineage tags continue to connect supporting tests. The Changes
+view remains a single list for reviewing pending decisions.
+
+With a project brief, the report overview shows only the problem statement and
+requirement entries. Open a requirement to see its specifications, open a
+specification to inspect its Gherkin and evidence, and use Back to move up one
+level. This navigation uses native HTML disclosures and also works offline.
+
+## Drill from a step into components
+
+Keep the complete end-to-end scenario and its own lineage ID. On a supporting
+Feature, Rule or Scenario, add `@supports:<parent-lineage-id>:<step-number>`:
+
+```gherkin
+@e2e @choose-item
+Scenario: Choose an item
+  Given items are available
+  When I select an item
+  Then my choice is shown
+```
+
+```gherkin
+@api @supports:choose-item:1
+Feature: Provide available items
+  @list-items-api
+  Scenario: List available items
+    When I request the available items
+    Then the response contains those items
+```
+
+A frontend feature can use `@frontend @supports:choose-item:1` with its own
+scenario lineage IDs. `@e2e`, `@api` and `@frontend` label the layer; they and
+`@supports:…` are metadata rather than shared test lineage. Tag each test with
+the specific scenario lineage ID it exercises.
+
+Step numbers start at one in displayed Gherkin order, including feature and rule
+background steps. The parent ID must identify exactly one scenario. A step link
+opens a separate supporting-feature view even before any step logs exist. The
+view groups scenarios by feature file and retains each scenario's result, source,
+logs and individual acceptance controls. Back returns to the originating step;
+further supporting links can be explored in the same way. Supporting results
+never replace the complete parent scenario's test result. Valid linked scenarios
+are reached through their parent instead of also appearing in the root list;
+the Changes view still includes every pending specification independently.
+Missing or ambiguous parents, invalid step numbers and cycles produce visible
+diagnostics. Reports without support metadata retain their existing navigation.
+
+Dogfooding friction: a recorded step could previously reveal only glue logs, so
+reviewing the enabling API and frontend required scanning unrelated root
+specifications. Supporting-feature links now expose that relationship directly.
+A future improvement could offer an authoring-time check for stale step numbers
+when parent Gherkin steps are inserted or reordered.
+
+Report navigation follows the same outline at every level: requirement, scenario,
+components, component feature, component scenario, and captured step evidence.
+Back returns one level and retains the original evidence and review controls.
+
+Use an inherited Gherkin tag such as `@component:Game-API` or
+`@component:Web-App` to group supporting features by component. Hyphens become
+spaces in the report label. Component names are project-defined metadata and
+never count as test lineage IDs. Untagged features remain under Other components.
+
+Dogfooding note: returning from captured step evidence left its disclosure open,
+so revisiting several steps cluttered the scenario with logs. Returning now
+collapses the step again. Agent Intent should keep regression coverage for
+both entering evidence and returning to the scenario overview.
+
+The interactive report uses the same disclosure pattern at each abstraction
+level. Chevron clicks expand requirements, scenarios, steps and BDD unit tests
+in place. Title links open a focused report URL (`#spec=…`) with that
+specification at the top; Back restores the hierarchy. Component scenarios
+linked with `@supports:<parent-lineage-id>:<step-number>` occur beneath that
+parent step, grouped by `@component:<name>`, and can have their own supporting
+scenarios. A parent keeps its own execution result. Unit specifications use
+BDD `describe`/`it` names and retain source code, declaration links, failure
+information and `t.diagnostic()` messages from the actual run. Existing tests
+without recorded diagnostics explicitly say that no logs were recorded.
+Cucumber evidence links to the captured step-definition source line.
+
+Dogfooding friction: the previous drilldown used different layouts for component
+features, scenarios and test code. A shared recursive disclosure layout now
+keeps the abstraction hierarchy visible. The browser regression exercises both
+inline expansion and focused title navigation, including returning to the
+original expansion state. New specification proposals remain unaccepted.
+A unit test can target a particular parent step using the Node test tags
+`supports:<parent-lineage-id>:<step-number>` and `component:<name>`. It then
+appears inside that step's component group. Tests sharing a scenario's lineage
+ID without step metadata remain dependencies of the whole scenario; the report
+does not invent a step relationship for them.
+
+Dogfooding friction: the fractal navigation ready flag did not match the CSS
+fallback selector, leaving a full-width sticky outline above the report. The
+fallback now recognises both navigation implementations. A browser regression
+checks separate outline/content regions while scrolling at four viewport widths,
+including expanded mobile navigation, and checks breadcrumb containment.
+
+Deep links also address component groups and individual Gherkin steps. Use the
+component or step title link to focus that abstraction level, then copy the URL.
+The same URL opens directly in a fresh tab and survives reload; breadcrumbs
+retain its requirement, parent scenarios, steps and component ancestry. The
+left chevron continues to expand a step inline.
+
+Dogfooding friction: focused URLs previously handled scenarios and unit tests
+but silently fell back to the project for a step or component. Navigation now
+recognises those levels too, with browser coverage for fresh loads and reloads
+across all five target types.
+
+### Scenario outline execution tabs
+
+Executed outlines show one tab per example and retry attempt. Each tab contains
+that run's concrete Gherkin, step results and recorded logs. Values are also
+substituted in data tables and doc strings; acceptance still compares the
+original template and Examples definitions. Shared nested specifications are
+linked at the owning step in every example tab. Arrow keys, Home and End switch
+tabs. Standalone exports keep all example content available when scripts are
+disabled.
+
+Dogfooding note: Toybox's material-combination examples exposed how merged
+per-step logs made individual runs hard to review. Run-level tabs address this;
+example values now travel with execution evidence rather than changing the
+accepted specification fingerprint.
+
+## Implementation decision inbox
+
+Open **Decisions** in the local report to review implementation choices separately
+from specification changes. Proposals are grouped by journey and component;
+unresolved items remain visible and do not block specification review or `verify`.
+A human records **Protect behavior** or **Allow implementation flexibility**, with
+an explicit scope and rationale. Flexibility never overrides an accepted requirement.
+Protect records work needed on a contract/test; it does not create tests or establish
+coverage. Specification approval still uses the existing acceptance workflow.
+
+Import a proposal batch with `npm run intent -- decisions --file proposals.json`:
+
+```json
+{
+  "version": 1,
+  "items": [{
+    "id": "material-order",
+    "title": "Material ordering",
+    "journey": "Choose three pieces",
+    "component": "Web App",
+    "specification": "@select-three-building-pieces",
+    "evidence": "Catalogue order and alphabetical order both preserve selection quantities."
+  }]
+}
+```
+
+IDs identify proposals across imports. Imports merge rather than delete omitted
+items. They cannot supply human classifications. The specification reference is
+shown for context, not automatically verified as a valid link. Review relevant
+contracts before granting flexibility. Human decisions and evidence are stored
+in `.agent-intent/decisions.json`, independently of `agent-intent.lock.json`.
+Keep this decision record in version control if it should travel with the project.
+Changed proposal content reopens classification while preserving the previous
+decision for comparison. Identical imports preserve current classifications.
+Concurrent or outdated submissions are rejected without writing state.
+
+For mutation evidence, run your chosen mutation engine separately and import its
+Mutation Testing Elements JSON output (schema version 1 or 2):
+
+```sh
+npm run intent -- mutations --file reports/mutation/mutation.json
+npm run intent -- serve
+```
+
+This boundary adapter validates the fields used by the inbox; it is not a complete
+JSON Schema validator. `Survived` and `NoCoverage` findings become unresolved
+proposals under **Unmapped mutation findings**, grouped by source file. Evidence
+includes mutation details, bounded source context and a source fingerprint.
+Other outcomes do not become flexibility proposals. Tool failures and equivalent
+mutations must be investigated separately; survival alone is not evidence that a
+change is permissible. Source changes reflected in a new import reopen review.
+The importer does not run mutation engines, infer requirements links, remove older
+findings, or certify that a report still matches the current checkout. Re-import
+fresh evidence and review it against current contracts before classifying.
+
+Decisions currently require the local interactive report. Offline specification
+exports retain their existing scope and do not classify implementation decisions.
+The local session token and revision checks prevent accidental cross-origin and
+stale writes; they do not authenticate a human independently of same-user processes.
+Agents must propose choices and leave classification to the human.

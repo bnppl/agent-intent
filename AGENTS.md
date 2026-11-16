@@ -2,11 +2,19 @@
 
 Read `.agents/skills/agent-intent/SKILL.md` before changing behaviour or executable specifications.
 
-Develop from the executable requirements in `features/`. Preserve specification meaning,
+Non-functional requirements do not need Gherkin specifications or unit tests.
+Enforce coding standards, REST design rules, formatting and type safety with
+appropriate tooling through `npm run check:static`. Do not add specifications
+or unit tests just to exercise those checkers. Keep functional behaviour tests.
+
+Develop functional behaviour from the executable requirements in `features/`. Preserve specification meaning,
 assertions and supporting tests. New and changed specifications remain proposals until
 human acceptance. Never self-approve.
 
-Run `npm ci`, `npm run build`, and `npm test`. Include both generated `runtime/*.cjs`
+Run `npm ci`, `npm run build`, `npm run check:static`, and `npm test` for
+functional implementation changes. For non-functional tooling or workflow
+changes, run the applicable checks through `npm run check:static`; no new
+specification or unit test is required. Include both generated `runtime/*.cjs`
 bundles alongside source in review. The current workflow uses report snapshots and
 `agent-intent.lock.json`; it does not provide Git-hook enforcement.
 

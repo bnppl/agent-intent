@@ -1,8 +1,7 @@
 import { Given, When, Then } from '@cucumber/cucumber';
-import assert from 'node:assert/strict';
+import { assert, spawnWithEvidence } from '../support/evidence.js';
 import { existsSync, readFileSync, symlinkSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { workingScenarios } from '../../src/lineage/load.js';
 import { definitionText } from '../../src/lineage/definition.js';
@@ -11,7 +10,7 @@ import { PresentationDriver } from '../support/presentation-driver.js';
 
 type ValidationWorld = {
   project?: PresentationDriver; discoveryError?: unknown; definition?: ReturnType<typeof workingScenarios>[number];
-  result?: ReturnType<typeof spawnSync>; rejected?: Response | number; beforeLock?: string | null;
+  result?: ReturnType<typeof spawnWithEvidence>; rejected?: Response | number; beforeLock?: string | null;
 };
 function driver(w: ValidationWorld): PresentationDriver { assert.ok(w.project); return w.project; }
 function lockBytes(w: ValidationWorld): string | null {
@@ -19,7 +18,7 @@ function lockBytes(w: ValidationWorld): string | null {
   return existsSync(path) ? readFileSync(path, 'utf8') : null;
 }
 function cli(w: ValidationWorld, command: string) {
-  return spawnSync(process.execPath, [fileURLToPath(new URL('../../runtime/cli.cjs', import.meta.url)), command],
+  return spawnWithEvidence(process.execPath, [fileURLToPath(new URL('../../runtime/cli.cjs', import.meta.url)), command],
     {cwd: driver(w).root, encoding:'utf8'});
 }
 function source(w: ValidationWorld): string { return readFileSync(join(driver(w).root, 'features/example.feature'), 'utf8'); }

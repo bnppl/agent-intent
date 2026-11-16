@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+import { assert, fetchWithEvidence, logEvidence, logRequest } from './evidence.js';
 import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
@@ -35,7 +35,9 @@ describe('Reporting', () => {
     this.server = spawn(process.execPath, [fileURLToPath(new URL('../../runtime/cli.cjs', import.meta.url)),
       'serve', '--port', '0'], { cwd: this.root, stdio: ['ignore', 'pipe', 'pipe'] });
     this.origin = await new Promise<string>((resolve, reject) => {
+      let ready = false;
       let logs = '';
+      logEvidence('CLI command', 'node runtime/cli.cjs serve --port 0');
       const timeout = setTimeout(() => reject(Error('Report server timeout: ' + logs)), 10000);
       this.server!.once('error', error => { clearTimeout(timeout); reject(error); });
       this.server!.once('exit', code => { clearTimeout(timeout); reject(Error('Report server exited: ' + code + logs)); });
@@ -43,7 +45,12 @@ describe('Reporting', () => {
       this.server!.stdout!.on('data', data => {
         logs += String(data);
         const match = logs.match(/Agent Intent: (http:\/\/127\.0\.0\.1:\d+)/);
-        if (match) { clearTimeout(timeout); resolve(match[1]); }
+        if (match && !ready) {
+          ready = true;
+          clearTimeout(timeout);
+          logEvidence('CLI startup output', logs);
+          resolve(match[1]);
+        }
       });
     });
     const html = await (await fetch(this.origin + '/lineage')).text();
@@ -52,15 +59,24 @@ describe('Reporting', () => {
 
   async request(path: string, value?: unknown, token?: string, headers: Record<string, string> = {}): Promise<Response> {
     await this.start();
-    return fetch(this.origin + path, value === undefined ? { headers } : { method: 'POST',
+    return fetchWithEvidence(this.origin + path, value === undefined ? { headers } : { method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Agent-Intent-Token': token ?? this.token ?? '', ...headers }, body: JSON.stringify(value) });
   }
 
   async rawStatus(path: string, headers: Record<string, string>): Promise<number> {
     await this.start();
+    logRequest('GET', this.origin + path, new Headers(headers));
     return new Promise((resolve, reject) => {
       get(this.origin + path, { headers }, response => {
-        response.resume(); resolve(response.statusCode!);
+        response.setEncoding('utf8');
+        let body = '';
+        response.on('data', (chunk: string) => { if (body.length < 8192) body += chunk; });
+        response.on('error', reject);
+        response.on('end', () => {
+          const headerLines = response.rawHeaders.flatMap((name, index) => index % 2 ? [] : [name + ': ' + response.rawHeaders[index + 1]]);
+          logEvidence('HTTP response', [String(response.statusCode), ...headerLines, '', body].join('\n'));
+          resolve(response.statusCode!);
+        });
       }).on('error', reject);
     });
   }

@@ -18,5 +18,5 @@ Feature: Start the review workbench with one command
 
   @startup-consumer-server
   Scenario: Manage a background server for only the consuming project
-    When a consuming project starts and refreshes its packaged workbench
+    When a consuming project starts and refreshes its workbench through the installed CLI link
     Then its page stays available after startup exits and another project cannot stop it

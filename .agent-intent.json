@@ -32,7 +32,8 @@
     ],
     [
       "npm",
-      "test"
+      "run",
+      "check:static"
     ],
     [
       "npm",

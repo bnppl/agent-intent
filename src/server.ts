@@ -1,11 +1,13 @@
+import { classifyDecision, decisionInbox } from './decisions.js';
 import { createServer } from 'node:http';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { lineageJs } from 'agent-intent:assets';
 import { editorOptions } from './core/editor.js';
+import { readBrief } from './core/brief.js';
 import { resolve } from 'node:path';
 import { IntentError, object } from './core/files.js';
-import { acceptSpecification, reportModel } from './lineage/state.js';
+import { acceptSpecification, latestReport, reportModel } from './lineage/state.js';
 import { renderLineage } from './lineage/report.js';
 import { lineageStyles } from './lineage/style.js';
 
@@ -34,13 +36,17 @@ export function makeServer(root: string): Server {
       if (request.method === 'GET') {
         if (path === '/lineage.css') return send(response, 200, lineageStyles, 'text/css');
         if (path === '/lineage.js') return send(response, 200, lineageJs, 'text/javascript');
+        if (path === '/api/decisions') return send(response, 200, decisionInbox(root));
         if (path === '/api/lineage') return send(response, 200, reportModel(root));
         if (path === '/' || path === '/lineage') {
-          const model = reportModel(root);
+          const brief = readBrief(root);
+          const model = brief ? latestReport(root) : reportModel(root);
           const requestedView = url.searchParams.get('view');
-          const view = requestedView === 'changes' || requestedView === 'workflow' ? requestedView : 'specifications';
-          return send(response, 200, renderLineage(model.snapshot.scenarios, model.snapshot.tests,
-            { editor: editorOptions(root), runFailed: model.snapshot.runFailed, accepted: model.accepted, revision: model.revision, sessionToken: token, view }), 'text/html');
+          const view = requestedView === 'decisions' || requestedView === 'workflow' || (model && requestedView === 'changes') ? requestedView : 'specifications';
+          return send(response, 200, renderLineage(model?.snapshot.scenarios ?? [], model?.snapshot.tests ?? [], {
+            decisions: decisionInbox(root), brief, briefOnly: !model, editor: editorOptions(root), runFailed: model?.snapshot.runFailed,
+            executions: model?.snapshot.executions, accepted: model?.accepted, revision: model?.revision, sessionToken: token, view,
+          }), 'text/html');
         }
         return send(response, 404, { error: 'Not found' });
       }
@@ -55,6 +61,10 @@ export function makeServer(root: string): Server {
       if (size !== length) throw new IntentError('Incomplete request body');
       const value: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'));
       if (!object(value)) throw new IntentError('Expected a JSON object');
+      if (path === '/api/decisions/classify') {
+        classifyDecision(root, value);
+        return send(response, 200, { recorded: true });
+      }
       // Acceptance mutations are synchronous after body collection.
       if (path === '/api/lineage/accept') {
         if (typeof value.revision !== 'string' || !/^[0-9a-f]{64}$/.test(value.revision)

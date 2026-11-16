@@ -1,8 +1,7 @@
 import { After, Given, Then, When } from '@cucumber/cucumber';
-import assert from 'node:assert/strict';
+import { assert, spawnWithEvidence } from '../support/evidence.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import type { IntentWorld } from '../hooks.js';
 import { PresentationDriver } from '../support/presentation-driver.js';
@@ -10,7 +9,7 @@ import { PresentationDriver } from '../support/presentation-driver.js';
 type LockWorld = IntentWorld & { project?: PresentationDriver };
 function driver(world: LockWorld): PresentationDriver { assert.ok(world.project); return world.project; }
 function verify(world: LockWorld) {
-  return spawnSync(process.execPath, [fileURLToPath(new URL('../../runtime/cli.cjs', import.meta.url)), 'verify'],
+  return spawnWithEvidence(process.execPath, [fileURLToPath(new URL('../../runtime/cli.cjs', import.meta.url)), 'verify'],
     { cwd: driver(world).root, encoding: 'utf8' });
 }
 Given('a project with specifications and related passing tests', function (this: LockWorld) {

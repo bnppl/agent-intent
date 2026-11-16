@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-13T18:06:16.601456+00:00",
+  "title": "Design System: Agent Intent",
+  "extensions": {
+    "colorMeta": {
+      "evergreen": {
+        "role": "primary",
+        "displayName": "Evergreen",
+        "tonalRamp": [
+          "oklch(15.00% 0.04542 181.90)",
+          "oklch(26.43% 0.04542 181.90)",
+          "oklch(37.86% 0.04542 181.90)",
+          "oklch(49.29% 0.04542 181.90)",
+          "oklch(60.71% 0.04542 181.90)",
+          "oklch(72.14% 0.04542 181.90)",
+          "oklch(83.57% 0.04542 181.90)",
+          "oklch(95.00% 0.04542 181.90)"
+        ]
+      },
+      "passed": {
+        "role": "primary",
+        "displayName": "Passed",
+        "tonalRamp": [
+          "oklch(15.00% 0.06281 170.37)",
+          "oklch(26.43% 0.06281 170.37)",
+          "oklch(37.86% 0.06281 170.37)",
+          "oklch(49.29% 0.06281 170.37)",
+          "oklch(60.71% 0.06281 170.37)",
+          "oklch(72.14% 0.06281 170.37)",
+          "oklch(83.57% 0.06281 170.37)",
+          "oklch(95.00% 0.06281 170.37)"
+        ]
+      },
+      "failed": {
+        "role": "secondary",
+        "displayName": "Failed",
+        "tonalRamp": [
+          "oklch(15.00% 0.13978 28.20)",
+          "oklch(26.43% 0.13978 28.20)",
+          "oklch(37.86% 0.13978 28.20)",
+          "oklch(49.29% 0.13978 28.20)",
+          "oklch(60.71% 0.13978 28.20)",
+          "oklch(72.14% 0.13978 28.20)",
+          "oklch(83.57% 0.13978 28.20)",
+          "oklch(95.00% 0.13978 28.20)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.03358 180.08)",
+          "oklch(26.43% 0.03358 180.08)",
+          "oklch(37.86% 0.03358 180.08)",
+          "oklch(49.29% 0.03358 180.08)",
+          "oklch(60.71% 0.03358 180.08)",
+          "oklch(72.14% 0.03358 180.08)",
+          "oklch(83.57% 0.03358 180.08)",
+          "oklch(95.00% 0.03358 180.08)"
+        ]
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Cream",
+        "tonalRamp": [
+          "oklch(15.00% 0.00668 115.70)",
+          "oklch(26.43% 0.00668 115.70)",
+          "oklch(37.86% 0.00668 115.70)",
+          "oklch(49.29% 0.00668 115.70)",
+          "oklch(60.71% 0.00668 115.70)",
+          "oklch(72.14% 0.00668 115.70)",
+          "oklch(83.57% 0.00668 115.70)",
+          "oklch(95.00% 0.00668 115.70)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.02706 164.95)",
+          "oklch(26.43% 0.02706 164.95)",
+          "oklch(37.86% 0.02706 164.95)",
+          "oklch(49.29% 0.02706 164.95)",
+          "oklch(60.71% 0.02706 164.95)",
+          "oklch(72.14% 0.02706 164.95)",
+          "oklch(83.57% 0.02706 164.95)",
+          "oklch(95.00% 0.02706 164.95)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "tonalRamp": [
+          "oklch(15.00% 0.01709 137.03)",
+          "oklch(26.43% 0.01709 137.03)",
+          "oklch(37.86% 0.01709 137.03)",
+          "oklch(49.29% 0.01709 137.03)",
+          "oklch(60.71% 0.01709 137.03)",
+          "oklch(72.14% 0.01709 137.03)",
+          "oklch(83.57% 0.01709 137.03)",
+          "oklch(95.00% 0.01709 137.03)"
+        ]
+      },
+      "soft-sage": {
+        "role": "neutral",
+        "displayName": "Soft Sage",
+        "tonalRamp": [
+          "oklch(15.00% 0.01304 130.78)",
+          "oklch(26.43% 0.01304 130.78)",
+          "oklch(37.86% 0.01304 130.78)",
+          "oklch(49.29% 0.01304 130.78)",
+          "oklch(60.71% 0.01304 130.78)",
+          "oklch(72.14% 0.01304 130.78)",
+          "oklch(83.57% 0.01304 130.78)",
+          "oklch(95.00% 0.01304 130.78)"
+        ]
+      },
+      "passed-wash": {
+        "role": "neutral",
+        "displayName": "Passed Wash",
+        "tonalRamp": [
+          "oklch(15.00% 0.01670 151.10)",
+          "oklch(26.43% 0.01670 151.10)",
+          "oklch(37.86% 0.01670 151.10)",
+          "oklch(49.29% 0.01670 151.10)",
+          "oklch(60.71% 0.01670 151.10)",
+          "oklch(72.14% 0.01670 151.10)",
+          "oklch(83.57% 0.01670 151.10)",
+          "oklch(95.00% 0.01670 151.10)"
+        ]
+      },
+      "failed-wash": {
+        "role": "neutral",
+        "displayName": "Failed Wash",
+        "tonalRamp": [
+          "oklch(15.00% 0.01722 35.34)",
+          "oklch(26.43% 0.01722 35.34)",
+          "oklch(37.86% 0.01722 35.34)",
+          "oklch(49.29% 0.01722 35.34)",
+          "oklch(60.71% 0.01722 35.34)",
+          "oklch(72.14% 0.01722 35.34)",
+          "oklch(83.57% 0.01722 35.34)",
+          "oklch(95.00% 0.01722 35.34)"
+        ]
+      },
+      "blue": {
+        "role": "secondary",
+        "displayName": "Blue",
+        "tonalRamp": [
+          "oklch(15.00% 0.08795 242.77)",
+          "oklch(26.43% 0.08795 242.77)",
+          "oklch(37.86% 0.08795 242.77)",
+          "oklch(49.29% 0.08795 242.77)",
+          "oklch(60.71% 0.08795 242.77)",
+          "oklch(72.14% 0.08795 242.77)",
+          "oklch(83.57% 0.08795 242.77)",
+          "oklch(95.00% 0.08795 242.77)"
+        ]
+      },
+      "amber": {
+        "role": "secondary",
+        "displayName": "Amber",
+        "tonalRamp": [
+          "oklch(15.00% 0.07924 65.63)",
+          "oklch(26.43% 0.07924 65.63)",
+          "oklch(37.86% 0.07924 65.63)",
+          "oklch(49.29% 0.07924 65.63)",
+          "oklch(60.71% 0.07924 65.63)",
+          "oklch(72.14% 0.07924 65.63)",
+          "oklch(83.57% 0.07924 65.63)",
+          "oklch(95.00% 0.07924 65.63)"
+        ]
+      },
+      "violet": {
+        "role": "secondary",
+        "displayName": "Violet",
+        "tonalRamp": [
+          "oklch(15.00% 0.09745 314.28)",
+          "oklch(26.43% 0.09745 314.28)",
+          "oklch(37.86% 0.09745 314.28)",
+          "oklch(49.29% 0.09745 314.28)",
+          "oklch(60.71% 0.09745 314.28)",
+          "oklch(72.14% 0.09745 314.28)",
+          "oklch(83.57% 0.09745 314.28)",
+          "oklch(95.00% 0.09745 314.28)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 89.88)",
+          "oklch(26.43% 0.00000 89.88)",
+          "oklch(37.86% 0.00000 89.88)",
+          "oklch(49.29% 0.00000 89.88)",
+          "oklch(60.71% 0.00000 89.88)",
+          "oklch(72.14% 0.00000 89.88)",
+          "oklch(83.57% 0.00000 89.88)",
+          "oklch(95.00% 0.00000 89.88)"
+        ]
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "stage-transition-duration",
+        "value": "180ms",
+        "purpose": "Detail-stage view transition; disabled for reduced motion."
+      },
+      {
+        "name": "stage-transition-easing",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Detail-stage view transition easing."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "outline-collapse",
+        "value": "960px"
+      },
+      {
+        "name": "comparison-collapse",
+        "value": "650px"
+      },
+      {
+        "name": "compact-breadcrumb",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Report button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Conventional report action; acceptance remains a separate human decision.",
+      "html": "<button class=\"ds-button\">Accept</button>",
+      "css": ".ds-button{font:600 .85rem/1.6 system-ui,sans-serif;padding:8px 13px;border:1px solid var(--passed,#205545);border-radius:5px;background:#fff;color:var(--passed,#205545);cursor:pointer}.ds-button:hover{background:#e5f0e7}.ds-button:focus-visible{outline:2px solid var(--passed,#205545);outline-offset:4px;}.ds-button:disabled{color:var(--muted,#53665d);border-color:var(--border,#d9e1d6);cursor:default}"
+    },
+    {
+      "name": "Passed result",
+      "kind": "chip",
+      "refersTo": "badge-passed",
+      "description": "Labeled execution result, independent from acceptance.",
+      "html": "<span class=\"ds-passed\">Passed</span>",
+      "css": ".ds-passed{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:4px;font:650 .8rem/1.6 system-ui,sans-serif;white-space:nowrap;color:var(--passed,#205545);background:#e5f0e7}"
+    },
+    {
+      "name": "Failed result",
+      "kind": "chip",
+      "refersTo": "badge-failed",
+      "description": "Labeled execution result, independent from acceptance.",
+      "html": "<span class=\"ds-failed\">Failed</span>",
+      "css": ".ds-failed{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:4px;font:650 .8rem/1.6 system-ui,sans-serif;white-space:nowrap;color:var(--failed,#a13930);background:#fbece8}"
+    },
+    {
+      "name": "Outline navigation",
+      "kind": "nav",
+      "description": "Persistent current-location context.",
+      "html": "<nav class=\"ds-outline\" aria-label=\"Report sections\"><button>Project intent</button><button aria-current=\"page\">A requirement</button></nav>",
+      "css": ".ds-outline button{display:block;width:100%;min-height:40px;padding:9px 12px;border:0;border-radius:6px;background:transparent;color:var(--muted,#53665d);font:450 .85rem/1.4 system-ui,sans-serif;text-align:left;cursor:pointer}.ds-outline button:hover{background:#e8eee6;color:#173e38}.ds-outline button[aria-current]{background:#dfeae0;color:#173e38;font-weight:650}.ds-outline button:focus-visible{outline:2px solid var(--passed,#205545);outline-offset:4px;}"
+    },
+    {
+      "name": "Requirement row",
+      "kind": "custom",
+      "description": "Disclosure fallback for a requirement; the application enhancement navigates into its detail stage.",
+      "html": "<details class=\"ds-requirement\"><summary><span>A high-level requirement</span></summary><p>Linked scenarios</p></details>",
+      "css": ".ds-requirement{border-bottom:1px solid var(--border,#d9e1d6);font:15px/1.6 system-ui,sans-serif;color:#19332e}.ds-requirement summary{display:flex;align-items:center;min-height:64px;padding:16px 10px;color:#245d85;border-radius:6px;cursor:pointer;list-style:none}.ds-requirement summary:hover{background:#e5eee8}.ds-requirement summary:focus-visible{outline:2px solid var(--passed,#205545);outline-offset:4px;}.ds-requirement[open]{border-bottom:0}.ds-requirement[open] summary{padding:0 0 20px;color:#173e38;font-size:1.5rem;line-height:1.35;cursor:default}.ds-requirement[open] summary:hover{background:transparent}"
+    },
+    {
+      "name": "Technical source",
+      "kind": "custom",
+      "refersTo": "source-block",
+      "description": "Readable Gherkin, source and logs.",
+      "html": "<pre class=\"ds-source\">Given a recorded test run\nThen its evidence remains inspectable</pre>",
+      "css": ".ds-source{white-space:pre;overflow:auto;padding:12px;background:#edf2e9;color:#19332e;font:.8rem/1.5 ui-monospace,monospace}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Outline Workspace",
+    "overview": "Agent Intent uses a quiet, flat developer-report language: evergreen navigation, a pale cream canvas, readable report prose and compact technical evidence. Context remains visible while the detail stage follows the reviewer into the next level.\n\nThe report treats test outcomes, specification changes and human acceptance as separate information. Visual hierarchy supports inspection without implying that a passing test is an accepted specification.",
+    "keyCharacteristics": [
+      "Persistent outline and shared breadcrumb navigation.",
+      "One selected detail level at a time.",
+      "Flat surfaces with restrained borders and tonal states.",
+      "System UI prose paired with monospace source and evidence."
+    ],
+    "rules": [
+      {
+        "name": "The Context Rule",
+        "body": "Keep the outline and shared breadcrumb bar available while the selected detail owns the stage.",
+        "section": "layout"
+      },
+      {
+        "name": "The Evidence Rule",
+        "body": "Keep execution results visually and semantically separate from specification changes and human acceptance.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Surface Rule",
+        "body": "Use borders, whitespace and tonal fills to distinguish surfaces; the report does not use drop shadows.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve current location in the outline and breadcrumb bar.",
+      "Do retain original evidence nodes, disclosure state, focus and scroll when navigating back.",
+      "Do use monospace for source, logs, paths and technical identifiers.",
+      "Do retain readable labels alongside result and change colors."
+    ],
+    "donts": [
+      "Don't equate passing execution with human acceptance.",
+      "Don't turn deeper inspection into a stack of simultaneously visible detail panels.",
+      "Don't add ornamental shadows to the flat report surfaces."
+    ]
+  }
+}

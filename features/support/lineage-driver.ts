@@ -1,7 +1,6 @@
 /** Exercise the reporter through a real Node BDD test run in a temporary project. */
-import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { assert, logEvidence, spawnWithEvidence } from './evidence.js';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,6 +14,7 @@ export class LineageDriver {
     const full = join(this.root, path);
     mkdirSync(dirname(full), { recursive: true });
     writeFileSync(full, source);
+    logEvidence('Fixture written', path);
   }
 
   scenario(lineage: string): void {
@@ -41,11 +41,15 @@ describe('HTML reporting', () => {
 `);
   }
 
-  run(files = ['example.test.mjs'], expectedStatus = 0, nodeOptions: string[] = []): void {
+  run(files = ['example.test.mjs'], expectedStatus = 0, nodeOptions: string[] = [], cucumberMessages?: string): void {
     const env = { ...process.env };
     // A nested test command must start its own runner, not reuse the parent's context.
     delete env.NODE_TEST_CONTEXT;
-    const result = spawnSync(process.execPath, [
+    if (cucumberMessages) {
+      env.AGENT_INTENT_CUCUMBER_ROOT = realpathSync(this.root);
+      env.AGENT_INTENT_CUCUMBER_MESSAGES = cucumberMessages;
+    }
+    const result = spawnWithEvidence(process.execPath, [
       '--enable-source-maps', ...nodeOptions, '--test', '--test-reporter', reporter,
       '--test-reporter-destination', 'lineage.html', ...files,
     ], { cwd: this.root, env, encoding: 'utf8', timeout: 15000 });

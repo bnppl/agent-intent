@@ -1,7 +1,7 @@
 /** Execute the exported selection script against a small DOM adapter.
  * This checks event behaviour without claiming browser layout or native clipboard coverage.
  */
-import assert from 'node:assert/strict';
+import { assert } from './evidence.js';
 import { runInNewContext } from 'node:vm';
 
 class Control {

@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Intent report</title>
+<style>
+:root { font: 15px/1.6 system-ui, sans-serif; color: #19332e; background: #f5f6f1;
+  --passed: #205545; --failed: #a13930; --muted: #53665d; --border: #d9e1d6; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+header { padding: 20px max(24px, calc((100% - 1100px) / 2)); background: #142f2c; color: #fff; }
+header .brand-logo { display: block; width: 216px; max-width: 100%; height: auto; background: #fff; border-radius: 8px; margin-bottom: 14px; }
+header p { color: #c7d9c7; margin: 4px 0; }
+header .refresh-report { display: inline-block; color: #e0edd9; margin-top: 12px; font-size: .85rem; }
+.report-nav { display: flex; gap: 28px; border-bottom: 1px solid var(--border); margin: 0 0 28px; }
+.report-nav a { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 8px 0; text-decoration: none; color: var(--muted); border-bottom: 3px solid transparent; }
+.report-nav a[aria-current="page"] { color: var(--passed); border-bottom-color: var(--passed); font-weight: 700; }
+.report-nav a:hover { color: var(--passed); }
+#pending-count { padding: 0 7px; border-radius: 4px; background: #e5f0e7; font-size: .8rem; }
+.view-heading h2, .workflow > h2 { display: block; font-size: 1.5rem; line-height: 1.3; }
+.view-heading p { color: var(--muted); margin: 8px 0 24px; }
+.requirement-group { margin: 24px 0; padding: 0 0 0 16px; border-left: 1px solid var(--border); }
+.requirement-group > h2 { display: block; margin-bottom: 12px; }
+.project-brief { max-width: 760px; padding-bottom: 16px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.project-brief h2 { display: block; font-size: 1.25rem; }
+.project-brief .problem-statement { white-space: pre-line; overflow-wrap: anywhere; }
+.project-brief ul { list-style: disc; margin-left: 1.5em; }
+.project-brief li { display: list-item; padding: 4px 0; background: transparent; }
+.workflow { max-width: 760px; }
+.workflow > p { color: var(--muted); }
+.workflow-step { border-top: 1px solid var(--border); padding: 20px 0; }
+.workflow-step h3 { margin: 0 0 12px; font-size: 1.05rem; }
+.workflow-step p { margin: 8px 0 12px; }
+.workflow-step pre { margin: 12px 0 0; }
+.review-empty { padding: 24px 0; color: var(--muted); }
+main { max-width: 1148px; margin: auto; padding: 20px 24px 40px; }
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 10px; letter-spacing: -.025em; }
+h2 { display: inline; font-size: 1rem; line-height: 1.5; margin: 0; }
+a { color: var(--passed); text-underline-offset: .2em; }
+a:hover { text-decoration-thickness: 2px; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 16px; }
+.legend-label { color: var(--muted); margin-right: 8px; }
+section { border-bottom: 1px solid var(--border); }
+.run-group { margin-top: 24px; }
+.run-group-title { display: flex; align-items: baseline; gap: 12px; font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+.run-group[data-run-group="failed"] > .run-group-title { color: var(--failed); }
+.run-group[data-run-group="passed"] > .run-group-title { color: var(--passed); }
+.change-group { margin-bottom: 16px; }
+.change-group-title { display: flex; align-items: baseline; gap: 12px; padding: 8px; color: var(--muted); font-size: .9rem; font-weight: 650; border-bottom: 1px solid var(--border); }
+[data-group-count] { font-size: .8rem; font-weight: 400; color: var(--muted); }
+details { padding: 3px 0; }
+summary { display: flex; align-items: center; gap: 12px; padding: 10px 8px; cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary:hover { background: #edf2e9; }
+summary h2 { flex: 1; overflow-wrap: anywhere; }
+svg { width: 18px; height: 18px; flex: none; }
+.expand-icon { color: var(--muted); }
+details[open] > summary .expand-icon { transform: rotate(90deg); }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 4px;
+  font-size: .8rem; font-weight: 650; white-space: nowrap; }
+.result-passed { color: var(--passed); background: #e5f0e7; }
+.result-failed { color: var(--failed); background: #fbece8; }
+.result-not-run { color: #53665d; background: #e9eeea; }
+.change-added { color: #245d85; background: #e7f1fa; }
+.change-modified { color: #795126; background: #fff1da; }
+.change-removed { color: #714b83; background: #f2eaf7; }
+.path, .empty, .help { color: var(--muted); font-size: .85rem; }
+.path { overflow-wrap: anywhere; margin: 6px 38px; }
+ul { list-style: none; margin: 8px 0 12px 38px; padding: 0; }
+li { position: relative; padding: 8px 44px 8px 8px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 3px 10px; overflow-wrap: anywhere; }
+li:nth-child(odd) { background: #edf2e9; }
+li .badge { margin-left: auto; }
+.empty, .review-actions { margin: 12px 38px 20px; }
+button { font: inherit; font-size: .85rem; font-weight: 600; padding: 8px 13px; border: 1px solid var(--passed);
+  border-radius: 5px; background: #fff; color: var(--passed); cursor: pointer; }
+button:hover { background: #e5f0e7; }
+button:disabled { color: var(--muted); border-color: var(--border); cursor: default; }
+button:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid #205545; outline-offset: 4px; }
+::selection { background: #c7ddca; color: #142f2c; }
+.message { min-height: 1.6em; color: var(--passed); }
+.message.error { color: var(--failed); }
+.gherkin-specification, .scenario-lineage, .supporting-tests { margin-left: 38px; }
+.gherkin-specification h3, .supporting-tests { font-size: .85rem; color: var(--passed); }
+.gherkin-source { background: #edf2e9; padding: 8px 0; }
+.gherkin-source > pre { margin: 0; padding: 0 12px; }
+.step-evidence { padding: 0; }
+.step-evidence summary, .step-without-evidence { align-items: baseline; gap: 8px; padding: 4px 12px; }
+.step-without-evidence { display: flex; flex-wrap: wrap; padding-left: 34px; }
+.step-evidence summary:hover, .step-evidence[open] > summary { background: #e0ebdf; }
+.step-evidence summary .expand-icon { align-self: start; width: 14px; height: 14px; margin-top: 3px; }
+.gherkin-source .step-text { flex: 1 1 14rem; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: .8rem/1.5 ui-monospace, monospace; }
+.step-evidence small { color: var(--muted); white-space: nowrap; }
+.step-run { margin: 0 12px 8px 36px; }
+.step-run h4 { margin: 8px 0 4px; font-size: .85rem; }
+.step-run pre { background: #f9faf6; margin: 4px 0; max-height: 24rem; }
+.step-run .empty { margin: 4px 0; }
+.scenario-lineage, .test-tags { font: .75rem/1.6 ui-monospace, monospace; color: var(--muted); }
+.test-tags { grid-column: 1 / -1; }
+.test-code { grid-column: 1 / -1; min-width: 0; padding: 0; }
+.test-code summary { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; padding: 0; justify-content: center; border-radius: 3px; font: 600 .85rem/1 ui-monospace, monospace; color: var(--passed); }
+.test-code[open] > summary { background: #dce9dc; }
+.test-source-location { font-size: .75rem; color: var(--muted); overflow-wrap: anywhere; }
+.test-code pre { margin: 8px 0; }
+:is(pre, .step-text) .hljs-keyword, :is(pre, .step-text) .hljs-literal, :is(pre, .step-text) .hljs-meta { color: #714b83; }
+:is(pre, .step-text) .hljs-string, :is(pre, .step-text) .hljs-regexp { color: #205545; }
+:is(pre, .step-text) .hljs-number, pre .hljs-type, :is(pre, .step-text) .hljs-variable { color: #795126; }
+:is(pre, .step-text) .hljs-title, :is(pre, .step-text) .hljs-built_in { color: #245d85; }
+:is(pre, .step-text) .hljs-comment { color: var(--muted); font-style: italic; }
+.spec-change { margin: 0 8px 8px 38px; }
+.spec-change summary { font-size: .85rem; color: var(--passed); }
+.comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.comparison h3 { font-size: .85rem; margin: 12px 0 8px; }
+pre { white-space: pre; overflow: auto; padding: 12px; background: #edf2e9; font: .8rem/1.5 ui-monospace, monospace; }
+@media(max-width: 650px) { summary { flex-wrap: wrap; gap: 8px; } summary h2 { flex-basis: calc(100% - 32px); }
+  .report-nav { gap: 20px; } .report-nav a { font-size: .9rem; }
+  summary .badge { margin-left: 30px; } summary .badge + .badge { margin-left: 0; }
+  main { padding: 20px 14px; } li { align-items: start; } ul, .path, .review-actions, .empty, .spec-change, .gherkin-specification, .scenario-lineage, .supporting-tests { margin-left: 8px; }
+  .comparison { grid-template-columns: 1fr; } }
+
+/* A persistent outline and one detail stage keep the report in context. */
+[data-report-stack] { max-width: 1480px; display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px; align-items: start; padding: 32px; min-height: 100vh; }
+[data-report-stack]:not([data-navigation-ready]) { display: block; max-width: 1000px; }
+[data-report-stack]:not([data-navigation-ready]) .report-outline { display: none; }
+.workspace-stage { min-width: 0; view-transition-name: report-stage; }
+.report-outline { position: sticky; top: 32px; max-height: calc(100vh - 64px); overflow: auto; scrollbar-width: thin; scrollbar-color: #9fb6a8 transparent; }
+.outline-heading { display: flex; align-items: center; justify-content: space-between; min-height: 64px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.report-brand { color: #173e38; font-size: 1.25rem; font-weight: 750; letter-spacing: -.025em; }
+[data-outline-toggle] { display: none; }
+.report-outline nav button { display: block; width: 100%; min-height: 40px; padding: 9px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: .85rem; font-weight: 450; line-height: 1.4; text-align: left; overflow-wrap: anywhere; }
+.report-outline nav button:hover { background: #e8eee6; color: #173e38; }
+.report-outline nav button[aria-current="page"] { background: #dfeae0; color: #173e38; font-weight: 650; }
+.report-outline [data-outline-home] { font-weight: 650; }
+.outline-group { margin-top: 22px; }
+.report-outline nav [data-outline-requirement] { color: #294c40; font-weight: 650; }
+.outline-id { display: block; margin-bottom: 5px; color: #4f685c; font-size: .75rem; font-variant-numeric: tabular-nums; }
+.outline-scenario { margin: 5px 0 0 12px; padding-left: 12px; border-left: 1px solid var(--border); }
+.report-outline nav .outline-components { display: flex; align-items: center; gap: 10px; color: #426653; }
+.outline-components > span { margin-left: auto; padding: 1px 6px; border-radius: 4px; background: #e5ece3; font-size: .75rem; font-variant-numeric: tabular-nums; }
+.stack-navigation { position: sticky; top: 24px; z-index: 5; display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: center; gap: 16px; height: 64px; padding: 10px 16px; margin-bottom: 32px; border-radius: 8px; background: #173e38; color: #f1f6ed; }
+.stack-navigation [data-stack-back] { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px; border: 1px solid #789a88; color: #f1f6ed; background: transparent; }
+.stack-navigation [data-stack-back]:disabled { opacity: .5; cursor: default; }
+.stack-navigation [data-stack-back]:not(:disabled):hover { background: #29574b; }
+.stack-navigation nav { min-width: 0; overflow: hidden; }
+.stack-navigation ol { display: flex; align-items: center; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.stack-navigation li { display: flex; align-items: center; gap: 10px; flex: 0 1 auto; min-width: 0; padding: 0; background: transparent; font-size: .8rem; }
+.stack-navigation li:first-child { flex-shrink: 0; }
+.stack-navigation li:last-child { flex: 1 1 auto; }
+.stack-navigation li + li::before { content: '/'; color: #a4c3b5; }
+.stack-navigation li :is(button, span) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stack-navigation li button { min-height: 40px; padding: 4px 0; border: 0; background: transparent; color: #c9e3d3; text-align: left; text-decoration: underline; text-underline-offset: .25em; }
+.stack-navigation [aria-current] { color: #fff; font-weight: 650; }
+.stack-navigation :is(button, a):focus-visible { outline-color: #f4cd82; }
+[data-stack-content] { min-height: calc(100vh - 160px); overflow-anchor: none; }
+[data-report-stack] .project-brief { max-width: 72ch; border: 0; padding: 0; margin: 0 0 32px; }
+[data-report-stack] .project-brief h2 { margin: 0 0 16px; font-size: 1.5rem; line-height: 1.3; color: #173e38; }
+[data-report-stack] .problem-statement { max-width: 72ch; margin: 0 0 40px; font-size: 1.05rem; }
+[data-report-stack] .requirement-group { border: 0; padding: 0; margin: 0; }
+[data-report-stack] .requirement-level { border-bottom: 1px solid var(--border); }
+[data-report-stack] .requirement-level > summary { min-height: 64px; padding: 16px 10px; }
+[data-report-stack] .requirement-level:not([open]) > summary { color: #245d85; border-radius: 6px; }
+[data-report-stack] .requirement-level:not([open]) > summary:hover { background: #e5eee8; }
+[data-report-stack] .stack-back { display: none; }
+[data-report-stack]:has(.requirement-level[open]) .stack-overview,
+[data-report-stack]:has(.requirement-level[open]) .requirement-group:not(:has(> .requirement-level[open])) { display: none; }
+[data-report-stack] .requirement-level[open] { border-bottom: 0; }
+[data-stack-rows]:has(.specification-level[open]) > section:not(:has(> .specification-level[open])),
+.requirement-level:has(.specification-level[open]) > summary { display: none; }
+[data-navigation-ready] .requirement-level[open] > summary,
+[data-navigation-ready] .specification-level[open] > summary { display: flex; align-items: flex-start; cursor: default; padding: 0 0 20px; margin: 0; }
+[data-navigation-ready] .requirement-level[open] > summary h2,
+[data-navigation-ready] .specification-level[open] > summary h2 { font-size: 1.5rem; line-height: 1.35; color: #173e38; }
+[data-navigation-ready] details[open] > summary > .expand-icon { display: none; }
+[data-navigation-ready] details[open] > summary:hover { background: transparent; }
+.workspace-stage .specification-actions { padding: 0; margin: 4px 0 20px; }
+.workspace-stage :is(.path, .gherkin-specification, .scenario-lineage, .supporting-tests, .spec-change) { margin-left: 0; }
+.workspace-stage .path { margin: 0 0 20px; }
+.workspace-stage section > details > ul { margin-left: 0; }
+.workspace-stage .empty { margin-left: 0; }
+.workspace-stage .gherkin-source { border-radius: 6px; }
+.workspace-stage .step-evidence > summary { min-height: 44px; }
+.workspace-stage .step-evidence small { font-variant-numeric: tabular-nums; }
+.workspace-stage > .approval-panel { display: none; }
+.workspace-stage:has(.specification-level[open]) > .approval-panel { display: block; }
+.support-link { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; margin: 8px 12px 14px; padding: 6px 12px; border: 1px solid #c4d5c8; border-radius: 6px; background: #e4eee5; font-size: .85rem; font-weight: 650; text-decoration: none; }
+.support-link:hover { background: #d9e8dc; }
+.support-link .expand-icon { width: 15px; height: 15px; color: currentColor; }
+.support-diagnostic { color: #8b2c22; margin: 12px; }
+.support-feature { margin: 32px 0 40px; }
+.support-view-active main:not([data-report-stack]) > :not([data-support-view]),
+.support-view-active header,
+.support-view-active [data-stack-content] { display: none !important; }
+[data-support-view][hidden], [data-support-library][hidden] { display: none !important; }
+[data-support-view] { padding: 0; }
+[data-support-view] > [data-support-back] { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-bottom: 24px; }
+[data-support-back] .expand-icon { transform: rotate(180deg); }
+[data-navigation-ready] [data-support-view] > [data-support-back] { display: none; }
+[data-support-view] > h2 { display: block; font-size: 1.5rem; line-height: 1.35; color: #173e38; margin-bottom: 8px; }
+[data-support-view] > p { color: var(--muted); margin: 0 0 28px; overflow-wrap: anywhere; }
+.support-feature > h3 { margin: 0 0 16px; font-size: 1.1rem; line-height: 1.5; overflow-wrap: anywhere; }
+.support-feature > h3 > small { display: block; margin-top: 4px; font: .75rem/1.6 ui-monospace, monospace; color: var(--muted); font-weight: 400; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-old(report-stage), ::view-transition-new(report-stage) { animation-duration: 180ms; animation-timing-function: cubic-bezier(.16, 1, .3, 1); }
+@media (max-width: 960px) {
+  [data-report-stack] { display: block; padding: 20px; }
+  .report-outline { position: relative; top: auto; max-height: none; overflow: visible; margin-bottom: 16px; }
+  .outline-heading { min-height: 44px; padding: 0; margin: 0; border: 0; }
+  [data-outline-toggle] { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+  .report-outline nav { display: none; max-height: 55vh; overflow: auto; padding: 16px 0; border-bottom: 1px solid var(--border); }
+  [data-report-stack][data-outline-open] .report-outline nav { display: block; }
+  .stack-navigation { top: 12px; gap: 12px; margin-bottom: 28px; }
+}
+@media (max-width: 600px) {
+  [data-report-stack] { padding: 16px; }
+  .stack-navigation { grid-template-columns: 64px minmax(0, 1fr); gap: 10px; padding: 10px; }
+  .stack-navigation li { font-size: .75rem; }
+  .stack-navigation li:first-child { flex-shrink: 1; }
+  .workspace-stage summary { flex-wrap: wrap; }
+  .workspace-stage summary h2 { flex-basis: 100%; }
+  .workspace-stage summary .badge { margin-left: 0; }
+  [data-navigation-ready] .specification-level[open] > summary h2 { font-size: 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(report-stage), ::view-transition-new(report-stage) { animation: none; }
+}
+</style>
+<style>.preview-switch{display:flex;align-items:center;justify-content:center;gap:24px;min-height:44px;padding:8px 16px;border-bottom:1px solid #d9e1d6;background:#fff;font-size:13px}.preview-switch a{color:#34584c}.preview-switch a[aria-current]{font-weight:700;text-decoration:none}[data-report-stack]{display:block;max-width:1060px}.report-outline{display:none!important}</style><style>
+.stack-navigation li:last-child { flex: 0 0 auto; max-width: 55%; }
+@media (max-width:600px) {
+.stack-navigation li:not(:last-child) { display:none; }
+.stack-navigation li:last-child { max-width:100%; flex:1 1 auto; }
+.stack-navigation li:last-child::before { display:none; }
+.workspace-stage summary h2 { flex-basis:calc(100% - 30px); }
+}
+</style></head>
+<body><nav class="preview-switch" aria-label="Compare report layouts"><a href="/outline" >Outline workspace</a><a href="/focused" aria-current="page">Focused report</a></nav>
+
+<main data-report-stack>
+<aside class="report-outline" aria-label="Report outline"><div class="outline-heading"><span class="report-brand">Agent Intent</span><button type="button" data-outline-toggle aria-expanded="false" aria-controls="report-outline">Browse report<svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button></div><nav id="report-outline" aria-label="Report sections"><button type="button" data-outline-home aria-current="page">Project intent</button><div class="outline-group"><button type="button" data-outline-requirement="req-001"><span class="outline-id">REQ-001</span><span>Provide a variety of building toys like blocks and plastic bricks.</span></button><div class="outline-scenario"><button type="button" data-outline-scenario="features/building_toys.feature:6">See a choice of building toys when starting a fort</button><button type="button" class="outline-components" data-outline-parent="features/building_toys.feature:6" data-outline-components="support-features%2Fbuilding_toys.feature%3A6-1">Components<span aria-hidden="true">2</span></button></div></div></nav></aside><div class="workspace-stage"><div class="stack-navigation"><button type="button" data-stack-back disabled aria-label="Go back one level"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h14"/></svg>Back</button><nav aria-label="Breadcrumb"><ol data-stack-crumbs><li><span data-stack-depth="0" aria-current="page">Project intent</span></li></ol></nav></div><div data-stack-content><div class="stack-overview"><article class="project-brief" aria-label="Project intent"><h2>Problem statement</h2><p class="problem-statement">Imagine a classic catapult game, but set entirely in a messy playroom. You and your opponent build custom forts out of wooden blocks, plastic bricks, and dominoes. Once the forts are built, you take turns launching bouncy balls, toy cars, and action figures at each other&#39;s creations to knock them down. The winner is the player who has the last toy castle standing!</p><h2>High-level requirements</h2></article></div><div id="scenario-groups"><article data-requirement="req-001" class="requirement-group"><details class="requirement-level"><summary><span class="stack-back">Back · </span><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><h2>REQ-001 · Provide a variety of building toys like blocks and plastic bricks.</h2></summary><div data-requirement-rows data-stack-rows><section id="features/building_toys.feature:6" data-result="passed" data-change="modified">
+<details class="specification-level">
+<summary><span class="stack-back">Back · </span><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><h2>See a choice of building toys when starting a fort</h2><span class="badge result-passed">Passed</span><span class="badge layer-badge">E2E</span><span class="badge change-modified">Modified</span></summary>
+<div class="specification-actions"><button type="button" data-accept="[&quot;features/building_toys.feature&quot;,&quot;See a choice of building toys when starting a fort&quot;]:0" data-previous="e3ef660f8f18f00f3782bf67744eaffc3c0c615e0cfba9c49ed3d8774edd298b" aria-label="Accept See a choice of building toys when starting a fort" disabled>Accept</button></div>
+<p class="path"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/features/building_toys.feature:6:1" title="Open source in IDE">features/building_toys.feature:6</a></p>
+
+<div class="gherkin-specification"><h3>Gherkin specification</h3><div class="gherkin-source"><pre><span class="hljs-meta">@req-001</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Building toys for forts
+  Provide a variety of building toys like blocks and plastic bricks.
+<span class="hljs-meta">@choose-building-toys @e2e</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> See a choice of building toys when starting a fort</pre><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text" id="features/building_toys.feature:6-step-1">  <span class="hljs-keyword">Given</span> a player is about to build a fort</code><span class="badge result-passed">Passed</span><small>2 log entries</small></summary><div class="step-run"><pre><code>Started independent frontend http://127.0.0.1:61946 and REST API http://127.0.0.1:61945.</code></pre><pre><code>Opened a real Chrome browser. The frontend will fetch the actual API through its /list-toys proxy.</code></pre></div></details><a class="support-link" data-support-link href="#support-features%2Fbuilding_toys.feature%3A6-1"><span>Components</span><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">When</span> they look at the available building toys</code><span class="badge result-passed">Passed</span><small>7 log entries</small></summary><div class="step-run"><pre><code>HTTP request
+GET http://127.0.0.1:61946/
+{&quot;accept&quot;:&quot;text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7&quot;,&quot;accept-encoding&quot;:&quot;gzip, deflate, br, zstd&quot;,&quot;accept-language&quot;:&quot;en-GB,en-US;q=0.9,en;q=0.8&quot;,&quot;connection&quot;:&quot;keep-alive&quot;,&quot;host&quot;:&quot;127.0.0.1:61946&quot;,&quot;sec-fetch-dest&quot;:&quot;document&quot;,&quot;sec-fetch-mode&quot;:&quot;navigate&quot;,&quot;sec-fetch-site&quot;:&quot;none&quot;,&quot;sec-fetch-user&quot;:&quot;?1&quot;,&quot;upgrade-insecure-requests&quot;:&quot;1&quot;,&quot;user-agent&quot;:&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36&quot;,&quot;sec-ch-ua&quot;:&quot;\&quot;Not-A.Brand\&quot;;v=\&quot;99\&quot;, \&quot;Google Chrome\&quot;;v=\&quot;157\&quot;, \&quot;Chromium\&quot;;v=\&quot;157\&quot;&quot;,&quot;sec-ch-ua-mobile&quot;:&quot;?0&quot;,&quot;sec-ch-ua-platform&quot;:&quot;\&quot;macOS\&quot;&quot;}
+Body: (none)</code></pre><pre><code>HTTP response
+200 OK
+{&quot;cache-control&quot;:&quot;no-cache&quot;,&quot;connection&quot;:&quot;keep-alive&quot;,&quot;content-length&quot;:&quot;347&quot;,&quot;content-type&quot;:&quot;text/html&quot;,&quot;date&quot;:&quot;Fri, 13 Nov 2026 14:20:30 GMT&quot;,&quot;etag&quot;:&quot;W/\&quot;15b-QU1A0XCSuk6gpT0WmWlSIIdbAJQ\&quot;&quot;,&quot;keep-alive&quot;:&quot;timeout=5&quot;,&quot;vary&quot;:&quot;Origin, Sec-Fetch-Dest&quot;}
+
+&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;script type=&quot;module&quot; src=&quot;/@vite/client&quot;&gt;&lt;/script&gt;
+
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;Building toys · Toybox Trebuchet&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+  &lt;script type=&quot;module&quot; src=&quot;/main.jsx&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><pre><code>Assert HTTP status
+Expected: 200
+Actual: 200</code></pre><pre><code>HTTP request
+GET http://127.0.0.1:61946/list-toys
+{&quot;accept&quot;:&quot;*/*&quot;,&quot;accept-encoding&quot;:&quot;gzip, deflate, br, zstd&quot;,&quot;accept-language&quot;:&quot;en-GB,en-US;q=0.9,en;q=0.8&quot;,&quot;connection&quot;:&quot;keep-alive&quot;,&quot;host&quot;:&quot;127.0.0.1:61946&quot;,&quot;referer&quot;:&quot;http://127.0.0.1:61946/&quot;,&quot;sec-fetch-dest&quot;:&quot;empty&quot;,&quot;sec-fetch-mode&quot;:&quot;cors&quot;,&quot;sec-fetch-site&quot;:&quot;same-origin&quot;,&quot;user-agent&quot;:&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36&quot;,&quot;sec-ch-ua&quot;:&quot;\&quot;Not-A.Brand\&quot;;v=\&quot;99\&quot;, \&quot;Google Chrome\&quot;;v=\&quot;157\&quot;, \&quot;Chromium\&quot;;v=\&quot;157\&quot;&quot;,&quot;sec-ch-ua-mobile&quot;:&quot;?0&quot;,&quot;sec-ch-ua-platform&quot;:&quot;\&quot;macOS\&quot;&quot;}
+Body: (none)</code></pre><pre><code>HTTP response
+200 OK
+{&quot;vary&quot;:&quot;Origin&quot;,&quot;cache-control&quot;:&quot;no-store&quot;,&quot;connection&quot;:&quot;close&quot;,&quot;content-length&quot;:&quot;104&quot;,&quot;content-type&quot;:&quot;application/json; charset=utf-8&quot;,&quot;date&quot;:&quot;Fri, 13 Nov 2026 14:20:30 GMT&quot;}
+
+{&quot;toys&quot;:[{&quot;id&quot;:&quot;wooden-blocks&quot;,&quot;name&quot;:&quot;Wooden blocks&quot;},{&quot;id&quot;:&quot;plastic-bricks&quot;,&quot;name&quot;:&quot;Plastic bricks&quot;}]}</code></pre><pre><code>Assert HTTP status
+Expected: 200
+Actual: 200</code></pre><pre><code>Actual backend requests at http://127.0.0.1:61945
+[{&quot;method&quot;:&quot;GET&quot;,&quot;path&quot;:&quot;/list-toys&quot;}]
+Expected: GET /list-toys</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Then</span> the available building toys include:
+    |<span class="hljs-string"> Toy type </span>|
+    |<span class="hljs-string"> Wooden blocks </span>|
+    |<span class="hljs-string"> Plastic bricks </span>|</code><span class="badge result-passed">Passed</span><small>2 log entries</small></summary><div class="step-run"><pre><code>Assert building toy &quot;Wooden blocks&quot;
+Expected: visible=true, enabled=true, selected=true
+Actual: visible=true, enabled=true, selected=true</code></pre><pre><code>Assert building toy &quot;Plastic bricks&quot;
+Expected: visible=true, enabled=true, selected=true
+Actual: visible=true, enabled=true, selected=true</code></pre></div></details></div></div>
+<p class="scenario-lineage">Lineage IDs: @choose-building-toys</p>
+<h3 class="supporting-tests">Supporting tests</h3>
+<ul><li data-result="passed" data-lineage="@choose-building-toys">offers wooden blocks and plastic bricks when a player starts a fort<span class="badge result-passed">Passed</span><details class="test-code"><summary aria-label="View test code" title="View test code"><span aria-hidden="true">&lt;/&gt;</span></summary><p class="test-source-location"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/tests/building-toys.test.mjs:5:1" title="Open source in IDE">tests/building-toys.test.mjs:5</a></p><pre><code><span class="hljs-title function_">it</span>(<span class="hljs-string">&#x27;offers wooden blocks and plastic bricks when a player starts a fort&#x27;</span>, { <span class="hljs-attr">tags</span>: [<span class="hljs-string">&#x27;choose-building-toys&#x27;</span>] }, <span class="hljs-title function_">async</span> (t) =&gt; {
+  <span class="hljs-keyword">const</span> game = <span class="hljs-keyword">await</span> <span class="hljs-title function_">startGame</span>();
+  t.<span class="hljs-title function_">after</span>(<span class="hljs-function">() =&gt;</span> game.<span class="hljs-title function_">close</span>());
+  <span class="hljs-keyword">const</span> { <span class="hljs-variable language_">document</span>, catalogue } = <span class="hljs-keyword">await</span> <span class="hljs-title function_">openGame</span>(game);
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">status</span>(), <span class="hljs-number">200</span>);
+  assert.<span class="hljs-title function_">equal</span>(catalogue.<span class="hljs-title function_">status</span>(), <span class="hljs-number">200</span>);
+  assert.<span class="hljs-title function_">deepEqual</span>(<span class="hljs-keyword">await</span> catalogue.<span class="hljs-title function_">json</span>(), { <span class="hljs-attr">toys</span>: [
+    { <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;wooden-blocks&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Wooden blocks&#x27;</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;plastic-bricks&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Plastic bricks&#x27;</span> },
+  ] });
+  assert.<span class="hljs-title function_">ok</span>(game.<span class="hljs-property">apiRequests</span>.<span class="hljs-title function_">some</span>(<span class="hljs-function"><span class="hljs-params">request</span> =&gt;</span> request.<span class="hljs-property">method</span> === <span class="hljs-string">&#x27;GET&#x27;</span> &amp;&amp; request.<span class="hljs-property">path</span> === <span class="hljs-string">&#x27;/list-toys&#x27;</span>));
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> toy <span class="hljs-keyword">of</span> [<span class="hljs-string">&#x27;Wooden blocks&#x27;</span>, <span class="hljs-string">&#x27;Plastic bricks&#x27;</span>]) {
+    <span class="hljs-keyword">const</span> choice = game.<span class="hljs-property">page</span>.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>, { <span class="hljs-attr">name</span>: toy, <span class="hljs-attr">exact</span>: <span class="hljs-literal">true</span> });
+    <span class="hljs-keyword">await</span> choice.<span class="hljs-title function_">waitFor</span>();
+    assert.<span class="hljs-title function_">ok</span>(<span class="hljs-keyword">await</span> choice.<span class="hljs-title function_">isVisible</span>(), <span class="hljs-string">`<span class="hljs-subst">${toy}</span> has a visible choice`</span>);
+    assert.<span class="hljs-title function_">ok</span>(<span class="hljs-keyword">await</span> choice.<span class="hljs-title function_">isEnabled</span>(), <span class="hljs-string">`<span class="hljs-subst">${toy}</span> is enabled`</span>);
+    <span class="hljs-keyword">await</span> choice.<span class="hljs-title function_">check</span>();
+    assert.<span class="hljs-title function_">ok</span>(<span class="hljs-keyword">await</span> choice.<span class="hljs-title function_">isChecked</span>(), <span class="hljs-string">`<span class="hljs-subst">${toy}</span> can be selected`</span>);
+  }
+})</code></pre></details></li></ul>
+<details class="spec-change"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>Review specification change</summary><div class="comparison"><div><h3>Previously accepted</h3><pre><span class="hljs-meta">@req-001</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Building toys for forts
+  Provide a variety of building toys like blocks and plastic bricks.
+<span class="hljs-meta">@choose-building-toys</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> See a choice of building toys when starting a fort
+  <span class="hljs-keyword">Given</span> a player is about to build a fort
+  <span class="hljs-keyword">When</span> they look at the available building toys
+  <span class="hljs-keyword">Then</span> the available building toys include:
+    |<span class="hljs-string"> Toy type </span>|
+    |<span class="hljs-string"> Wooden blocks </span>|
+    |<span class="hljs-string"> Plastic bricks </span>|</pre></div><div><h3>Current specification</h3><pre><span class="hljs-meta">@req-001</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Building toys for forts
+  Provide a variety of building toys like blocks and plastic bricks.
+<span class="hljs-meta">@choose-building-toys @e2e</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> See a choice of building toys when starting a fort
+  <span class="hljs-keyword">Given</span> a player is about to build a fort
+  <span class="hljs-keyword">When</span> they look at the available building toys
+  <span class="hljs-keyword">Then</span> the available building toys include:
+    |<span class="hljs-string"> Toy type </span>|
+    |<span class="hljs-string"> Wooden blocks </span>|
+    |<span class="hljs-string"> Plastic bricks </span>|</pre></div></div></details>
+
+</details>
+</section></div></details></article></div><p class="message" role="status" id="lineage-message"></p></div>
+<div data-support-library><h2>Component specifications</h2><section id="features/api_toys.feature:6" data-result="passed" data-change="added">
+<details class="specification-level">
+<summary><span class="stack-back">Back · </span><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><h2>List the available building toys</h2><span class="badge result-passed">Passed</span><span class="badge layer-badge">API</span><span class="badge change-added">Added</span></summary>
+<div class="specification-actions"><button type="button" data-accept="[&quot;features/api_toys.feature&quot;,&quot;List the available building toys&quot;]:0" data-previous="" aria-label="Accept List the available building toys" disabled>Accept</button></div>
+<p class="path"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/features/api_toys.feature:6:1" title="Open source in IDE">features/api_toys.feature:6</a></p>
+
+<div class="gherkin-specification"><h3>Gherkin specification</h3><div class="gherkin-source"><pre><span class="hljs-meta">@api @supports:choose-building-toys:1</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Building toy catalogue API
+  Provide building toys to the game through a separate JSON service.
+<span class="hljs-meta">@api-list-toys</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> List the available building toys</pre><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Given</span> a request to the /list-toys API</code><span class="badge result-passed">Passed</span><small>1 log entry</small></summary><div class="step-run"><pre><code>Started independent REST service for http://127.0.0.1:61943/list-toys</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">When</span> the client requests the toys with GET</code><span class="badge result-passed">Passed</span><small>2 log entries</small></summary><div class="step-run"><pre><code>HTTP request
+GET http://127.0.0.1:61943/list-toys
+Headers: none supplied
+Body: none</code></pre><pre><code>HTTP response
+200 OK
+[[&quot;cache-control&quot;,&quot;no-store&quot;],[&quot;connection&quot;,&quot;keep-alive&quot;],[&quot;content-length&quot;,&quot;104&quot;],[&quot;content-type&quot;,&quot;application/json; charset=utf-8&quot;],[&quot;date&quot;,&quot;Fri, 13 Nov 2026 14:20:29 GMT&quot;],[&quot;keep-alive&quot;,&quot;timeout=5&quot;]]
+
+{&quot;toys&quot;:[{&quot;id&quot;:&quot;wooden-blocks&quot;,&quot;name&quot;:&quot;Wooden blocks&quot;},{&quot;id&quot;:&quot;plastic-bricks&quot;,&quot;name&quot;:&quot;Plastic bricks&quot;}]}</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Then</span> the API responds with status 200 and JSON toys:
+    |<span class="hljs-string"> id </span>|<span class="hljs-string"> name </span>|
+    |<span class="hljs-string"> wooden-blocks </span>|<span class="hljs-string"> Wooden blocks </span>|
+    |<span class="hljs-string"> plastic-bricks </span>|<span class="hljs-string"> Plastic bricks </span>|</code><span class="badge result-passed">Passed</span><small>3 log entries</small></summary><div class="step-run"><pre><code>Assert status
+Expected: 200
+Actual: 200</code></pre><pre><code>Assert JSON response type
+Actual: application/json; charset=utf-8
+Expected: application/json</code></pre><pre><code>Assert catalogue
+Expected: {&quot;toys&quot;:[{&quot;id&quot;:&quot;wooden-blocks&quot;,&quot;name&quot;:&quot;Wooden blocks&quot;},{&quot;id&quot;:&quot;plastic-bricks&quot;,&quot;name&quot;:&quot;Plastic bricks&quot;}]}
+Actual: {&quot;toys&quot;:[{&quot;id&quot;:&quot;wooden-blocks&quot;,&quot;name&quot;:&quot;Wooden blocks&quot;},{&quot;id&quot;:&quot;plastic-bricks&quot;,&quot;name&quot;:&quot;Plastic bricks&quot;}]}</code></pre></div></details></div></div>
+<p class="scenario-lineage">Lineage IDs: @api-list-toys</p>
+<h3 class="supporting-tests">Supporting tests</h3>
+<ul><li data-result="passed" data-lineage="@api-list-toys">lists the exact toy catalogue as JSON over HTTP<span class="badge result-passed">Passed</span><details class="test-code"><summary aria-label="View test code" title="View test code"><span aria-hidden="true">&lt;/&gt;</span></summary><p class="test-source-location"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/tests/toys-api.test.mjs:16:1" title="Open source in IDE">tests/toys-api.test.mjs:16</a></p><pre><code><span class="hljs-title function_">it</span>(<span class="hljs-string">&#x27;lists the exact toy catalogue as JSON over HTTP&#x27;</span>, { <span class="hljs-attr">tags</span>: [<span class="hljs-string">&#x27;api-list-toys&#x27;</span>] }, <span class="hljs-keyword">async</span> t =&gt; {
+  <span class="hljs-keyword">const</span> base = <span class="hljs-keyword">await</span> <span class="hljs-title function_">serve</span>(t);
+  <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`<span class="hljs-subst">${base}</span>/list-toys`</span>);
+  assert.<span class="hljs-title function_">equal</span>(response.<span class="hljs-property">status</span>, <span class="hljs-number">200</span>);
+  assert.<span class="hljs-title function_">match</span>(response.<span class="hljs-property">headers</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;content-type&#x27;</span>), <span class="hljs-regexp">/^application\/json\b/</span>);
+  assert.<span class="hljs-title function_">deepEqual</span>(<span class="hljs-keyword">await</span> response.<span class="hljs-title function_">json</span>(), {
+    <span class="hljs-attr">toys</span>: [
+      { <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;wooden-blocks&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Wooden blocks&#x27;</span> },
+      { <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;plastic-bricks&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Plastic bricks&#x27;</span> },
+    ],
+  });
+})</code></pre></details></li></ul>
+<details class="spec-change"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>Review specification change</summary><div class="comparison"><div><h3>Previously accepted</h3><p>Not previously accepted.</p></div><div><h3>Current specification</h3><pre><span class="hljs-meta">@api @supports:choose-building-toys:1</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Building toy catalogue API
+  Provide building toys to the game through a separate JSON service.
+<span class="hljs-meta">@api-list-toys</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> List the available building toys
+  <span class="hljs-keyword">Given</span> a request to the /list-toys API
+  <span class="hljs-keyword">When</span> the client requests the toys with GET
+  <span class="hljs-keyword">Then</span> the API responds with status 200 and JSON toys:
+    |<span class="hljs-string"> id </span>|<span class="hljs-string"> name </span>|
+    |<span class="hljs-string"> wooden-blocks </span>|<span class="hljs-string"> Wooden blocks </span>|
+    |<span class="hljs-string"> plastic-bricks </span>|<span class="hljs-string"> Plastic bricks </span>|</pre></div></div></details>
+
+</details>
+</section><section id="features/frontend_toys.feature:6" data-result="passed" data-change="added">
+<details class="specification-level">
+<summary><span class="stack-back">Back · </span><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><h2>Display the fetched toy choices</h2><span class="badge result-passed">Passed</span><span class="badge layer-badge">Frontend</span><span class="badge change-added">Added</span></summary>
+<div class="specification-actions"><button type="button" data-accept="[&quot;features/frontend_toys.feature&quot;,&quot;Display the fetched toy choices&quot;]:0" data-previous="" aria-label="Accept Display the fetched toy choices" disabled>Accept</button></div>
+<p class="path"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/features/frontend_toys.feature:6:1" title="Open source in IDE">features/frontend_toys.feature:6</a></p>
+
+<div class="gherkin-specification"><h3>Gherkin specification</h3><div class="gherkin-source"><pre><span class="hljs-meta">@frontend @supports:choose-building-toys:1</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Fetch building toys in the frontend
+  Players see the toys returned by the independent toy API.
+<span class="hljs-meta">@frontend-list-toys</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> Display the fetched toy choices</pre><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Given</span> the toy API returns controlled building toy choices</code><span class="badge result-passed">Passed</span><small>1 log entry</small></summary><div class="step-run"><pre><code>Controlled API response
+{&quot;toys&quot;:[{&quot;id&quot;:&quot;wooden-blocks&quot;,&quot;name&quot;:&quot;Painted timber cubes&quot;},{&quot;id&quot;:&quot;plastic-bricks&quot;,&quot;name&quot;:&quot;Rainbow construction bricks&quot;},{&quot;id&quot;:&quot;magnetic-tiles&quot;,&quot;name&quot;:&quot;Magnetic tiles&quot;}]}</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">When</span> the player opens the building toy frontend</code><span class="badge result-passed">Passed</span><small>3 log entries</small></summary><div class="step-run"><pre><code>Opened React frontend http://127.0.0.1:61957 in Chrome with controlled API responses.</code></pre><pre><code>HTTP request
+GET http://127.0.0.1:61957/list-toys
+{&quot;accept&quot;:&quot;*/*&quot;,&quot;referer&quot;:&quot;http://127.0.0.1:61957/&quot;,&quot;user-agent&quot;:&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36&quot;,&quot;sec-ch-ua&quot;:&quot;\&quot;Not-A.Brand\&quot;;v=\&quot;99\&quot;, \&quot;Google Chrome\&quot;;v=\&quot;157\&quot;, \&quot;Chromium\&quot;;v=\&quot;157\&quot;&quot;,&quot;sec-ch-ua-mobile&quot;:&quot;?0&quot;,&quot;sec-ch-ua-platform&quot;:&quot;\&quot;macOS\&quot;&quot;}
+Body: (none)</code></pre><pre><code>Controlled HTTP response
+200
+{&quot;content-type&quot;:&quot;application/json&quot;,&quot;content-length&quot;:&quot;172&quot;}
+{&quot;toys&quot;:[{&quot;id&quot;:&quot;wooden-blocks&quot;,&quot;name&quot;:&quot;Painted timber cubes&quot;},{&quot;id&quot;:&quot;plastic-bricks&quot;,&quot;name&quot;:&quot;Rainbow construction bricks&quot;},{&quot;id&quot;:&quot;magnetic-tiles&quot;,&quot;name&quot;:&quot;Magnetic tiles&quot;}]}</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Then</span> the frontend displays the returned toy names as selectable radio cards</code><span class="badge result-passed">Passed</span><small>4 log entries</small></summary><div class="step-run"><pre><code>Assert fetched toy {&quot;id&quot;:&quot;wooden-blocks&quot;,&quot;name&quot;:&quot;Painted timber cubes&quot;}
+Expected: visible=true, enabled=true, selected=true
+Actual: visible=true, enabled=true, selected=true</code></pre><pre><code>Assert fetched toy {&quot;id&quot;:&quot;plastic-bricks&quot;,&quot;name&quot;:&quot;Rainbow construction bricks&quot;}
+Expected: visible=true, enabled=true, selected=true
+Actual: visible=true, enabled=true, selected=true</code></pre><pre><code>Assert fetched toy {&quot;id&quot;:&quot;magnetic-tiles&quot;,&quot;name&quot;:&quot;Magnetic tiles&quot;}
+Expected: visible=true, enabled=true, selected=true
+Actual: visible=true, enabled=true, selected=true</code></pre><pre><code>Assert toy count
+Expected: 3
+Actual: 3</code></pre></div></details></div></div>
+<p class="scenario-lineage">Lineage IDs: @frontend-list-toys</p>
+<h3 class="supporting-tests">Supporting tests</h3>
+<ul><li data-result="passed" data-lineage="@frontend-list-toys">renders fetched toy names as selectable native radio cards<span class="badge result-passed">Passed</span><details class="test-code"><summary aria-label="View test code" title="View test code"><span aria-hidden="true">&lt;/&gt;</span></summary><p class="test-source-location"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/tests/frontend.test.mjs:23:1" title="Open source in IDE">tests/frontend.test.mjs:23</a></p><pre><code><span class="hljs-title function_">it</span>(<span class="hljs-string">&#x27;renders fetched toy names as selectable native radio cards&#x27;</span>, { <span class="hljs-attr">tags</span>: [<span class="hljs-string">&#x27;frontend-list-toys&#x27;</span>] }, <span class="hljs-keyword">async</span> t =&gt; {
+  <span class="hljs-keyword">const</span> page = <span class="hljs-keyword">await</span> <span class="hljs-title function_">pageFor</span>(t);
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">route</span>(<span class="hljs-string">&#x27;**/list-toys&#x27;</span>, <span class="hljs-function"><span class="hljs-params">route</span> =&gt;</span> route.<span class="hljs-title function_">fulfill</span>({ <span class="hljs-attr">json</span>: { <span class="hljs-attr">toys</span>: [
+    { <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;wooden-blocks&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Painted timber cubes&#x27;</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;plastic-bricks&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Rainbow construction bricks&#x27;</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;magnetic-tiles&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Magnetic tiles&#x27;</span> },
+  ] } }));
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">goto</span>(frontend.<span class="hljs-property">origin</span>);
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Painted timber cubes&#x27;</span>, <span class="hljs-attr">exact</span>: <span class="hljs-literal">true</span> }).<span class="hljs-title function_">waitFor</span>({ <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span> });
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>).<span class="hljs-title function_">count</span>(), <span class="hljs-number">3</span>);
+  <span class="hljs-keyword">const</span> first = page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Painted timber cubes&#x27;</span>, <span class="hljs-attr">exact</span>: <span class="hljs-literal">true</span> });
+  <span class="hljs-keyword">const</span> second = page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Rainbow construction bricks&#x27;</span>, <span class="hljs-attr">exact</span>: <span class="hljs-literal">true</span> });
+  <span class="hljs-keyword">await</span> first.<span class="hljs-title function_">check</span>();
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-keyword">await</span> first.<span class="hljs-title function_">isChecked</span>(), <span class="hljs-literal">true</span>);
+  <span class="hljs-keyword">await</span> second.<span class="hljs-title function_">check</span>();
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-keyword">await</span> first.<span class="hljs-title function_">isChecked</span>(), <span class="hljs-literal">false</span>);
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-keyword">await</span> second.<span class="hljs-title function_">isChecked</span>(), <span class="hljs-literal">true</span>);
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Magnetic tiles&#x27;</span>, <span class="hljs-attr">exact</span>: <span class="hljs-literal">true</span> }).<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;value&#x27;</span>), <span class="hljs-string">&#x27;magnetic-tiles&#x27;</span>);
+})</code></pre></details></li></ul>
+<details class="spec-change"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>Review specification change</summary><div class="comparison"><div><h3>Previously accepted</h3><p>Not previously accepted.</p></div><div><h3>Current specification</h3><pre><span class="hljs-meta">@frontend @supports:choose-building-toys:1</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Fetch building toys in the frontend
+  Players see the toys returned by the independent toy API.
+<span class="hljs-meta">@frontend-list-toys</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> Display the fetched toy choices
+  <span class="hljs-keyword">Given</span> the toy API returns controlled building toy choices
+  <span class="hljs-keyword">When</span> the player opens the building toy frontend
+  <span class="hljs-keyword">Then</span> the frontend displays the returned toy names as selectable radio cards</pre></div></div></details>
+
+</details>
+</section><section id="features/frontend_toys.feature:12" data-result="passed" data-change="added">
+<details class="specification-level">
+<summary><span class="stack-back">Back · </span><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><h2>Explain that the toybox is empty</h2><span class="badge result-passed">Passed</span><span class="badge layer-badge">Frontend</span><span class="badge change-added">Added</span></summary>
+<div class="specification-actions"><button type="button" data-accept="[&quot;features/frontend_toys.feature&quot;,&quot;Explain that the toybox is empty&quot;]:0" data-previous="" aria-label="Accept Explain that the toybox is empty" disabled>Accept</button></div>
+<p class="path"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/features/frontend_toys.feature:12:1" title="Open source in IDE">features/frontend_toys.feature:12</a></p>
+
+<div class="gherkin-specification"><h3>Gherkin specification</h3><div class="gherkin-source"><pre><span class="hljs-meta">@frontend @supports:choose-building-toys:1</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Fetch building toys in the frontend
+  Players see the toys returned by the independent toy API.
+<span class="hljs-meta">@frontend-empty-toys</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> Explain that the toybox is empty</pre><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Given</span> the toy API returns no building toys</code><span class="badge result-passed">Passed</span><small>1 log entry</small></summary><div class="step-run"><pre><code>Controlled API response
+{&quot;toys&quot;:[]}</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">When</span> the player opens the building toy frontend</code><span class="badge result-passed">Passed</span><small>3 log entries</small></summary><div class="step-run"><pre><code>Opened React frontend http://127.0.0.1:61967 in Chrome with controlled API responses.</code></pre><pre><code>HTTP request
+GET http://127.0.0.1:61967/list-toys
+{&quot;accept&quot;:&quot;*/*&quot;,&quot;referer&quot;:&quot;http://127.0.0.1:61967/&quot;,&quot;user-agent&quot;:&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36&quot;,&quot;sec-ch-ua&quot;:&quot;\&quot;Not-A.Brand\&quot;;v=\&quot;99\&quot;, \&quot;Google Chrome\&quot;;v=\&quot;157\&quot;, \&quot;Chromium\&quot;;v=\&quot;157\&quot;&quot;,&quot;sec-ch-ua-mobile&quot;:&quot;?0&quot;,&quot;sec-ch-ua-platform&quot;:&quot;\&quot;macOS\&quot;&quot;}
+Body: (none)</code></pre><pre><code>Controlled HTTP response
+200
+{&quot;content-type&quot;:&quot;application/json&quot;,&quot;content-length&quot;:&quot;11&quot;}
+{&quot;toys&quot;:[]}</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Then</span> the frontend explains that no building toys are available</code><span class="badge result-passed">Passed</span><small>1 log entry</small></summary><div class="step-run"><pre><code>Observed empty-state message
+No building toys are available yet. Check back soon.</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">And</span> the frontend offers no toy choices</code><span class="badge result-passed">Passed</span><small>1 log entry</small></summary><div class="step-run"><pre><code>Assert toy count
+Expected: 0
+Actual: 0</code></pre></div></details></div></div>
+<p class="scenario-lineage">Lineage IDs: @frontend-empty-toys</p>
+<h3 class="supporting-tests">Supporting tests</h3>
+<ul><li data-result="passed" data-lineage="@frontend-empty-toys">explains an empty API list without inventing toy choices<span class="badge result-passed">Passed</span><details class="test-code"><summary aria-label="View test code" title="View test code"><span aria-hidden="true">&lt;/&gt;</span></summary><p class="test-source-location"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/tests/frontend.test.mjs:43:1" title="Open source in IDE">tests/frontend.test.mjs:43</a></p><pre><code><span class="hljs-title function_">it</span>(<span class="hljs-string">&#x27;explains an empty API list without inventing toy choices&#x27;</span>, { <span class="hljs-attr">tags</span>: [<span class="hljs-string">&#x27;frontend-empty-toys&#x27;</span>] }, <span class="hljs-keyword">async</span> t =&gt; {
+  <span class="hljs-keyword">const</span> page = <span class="hljs-keyword">await</span> <span class="hljs-title function_">pageFor</span>(t);
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">route</span>(<span class="hljs-string">&#x27;**/list-toys&#x27;</span>, <span class="hljs-function"><span class="hljs-params">route</span> =&gt;</span> route.<span class="hljs-title function_">fulfill</span>({ <span class="hljs-attr">json</span>: { <span class="hljs-attr">toys</span>: [] } }));
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">goto</span>(frontend.<span class="hljs-property">origin</span>);
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;status&#x27;</span>).<span class="hljs-title function_">filter</span>({ <span class="hljs-attr">hasText</span>: <span class="hljs-string">&#x27;No building toys are available yet.&#x27;</span> }).<span class="hljs-title function_">waitFor</span>({ <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span> });
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>).<span class="hljs-title function_">count</span>(), <span class="hljs-number">0</span>);
+})</code></pre></details></li></ul>
+<details class="spec-change"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>Review specification change</summary><div class="comparison"><div><h3>Previously accepted</h3><p>Not previously accepted.</p></div><div><h3>Current specification</h3><pre><span class="hljs-meta">@frontend @supports:choose-building-toys:1</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Fetch building toys in the frontend
+  Players see the toys returned by the independent toy API.
+<span class="hljs-meta">@frontend-empty-toys</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> Explain that the toybox is empty
+  <span class="hljs-keyword">Given</span> the toy API returns no building toys
+  <span class="hljs-keyword">When</span> the player opens the building toy frontend
+  <span class="hljs-keyword">Then</span> the frontend explains that no building toys are available
+  <span class="hljs-keyword">And</span> the frontend offers no toy choices</pre></div></div></details>
+
+</details>
+</section><section id="features/frontend_toys.feature:19" data-result="passed" data-change="added">
+<details class="specification-level">
+<summary><span class="stack-back">Back · </span><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><h2>Retry a failed toy request</h2><span class="badge result-passed">Passed</span><span class="badge layer-badge">Frontend</span><span class="badge change-added">Added</span></summary>
+<div class="specification-actions"><button type="button" data-accept="[&quot;features/frontend_toys.feature&quot;,&quot;Retry a failed toy request&quot;]:0" data-previous="" aria-label="Accept Retry a failed toy request" disabled>Accept</button></div>
+<p class="path"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/features/frontend_toys.feature:19:1" title="Open source in IDE">features/frontend_toys.feature:19</a></p>
+
+<div class="gherkin-specification"><h3>Gherkin specification</h3><div class="gherkin-source"><pre><span class="hljs-meta">@frontend @supports:choose-building-toys:1</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Fetch building toys in the frontend
+  Players see the toys returned by the independent toy API.
+<span class="hljs-meta">@frontend-list-failure</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> Retry a failed toy request</pre><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Given</span> the toy API fails once before returning building toys</code><span class="badge result-passed">Passed</span><small>1 log entry</small></summary><div class="step-run"><pre><code>First response: HTTP 503 {&quot;error&quot;:&quot;Service unavailable&quot;}
+Retry response: HTTP 200 {&quot;toys&quot;:[{&quot;id&quot;:&quot;retry-blocks&quot;,&quot;name&quot;:&quot;Recovered blocks&quot;}]}</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">When</span> the player opens the building toy frontend</code><span class="badge result-passed">Passed</span><small>3 log entries</small></summary><div class="step-run"><pre><code>Opened React frontend http://127.0.0.1:61976 in Chrome with controlled API responses.</code></pre><pre><code>HTTP request
+GET http://127.0.0.1:61976/list-toys
+{&quot;accept&quot;:&quot;*/*&quot;,&quot;referer&quot;:&quot;http://127.0.0.1:61976/&quot;,&quot;user-agent&quot;:&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36&quot;,&quot;sec-ch-ua&quot;:&quot;\&quot;Not-A.Brand\&quot;;v=\&quot;99\&quot;, \&quot;Google Chrome\&quot;;v=\&quot;157\&quot;, \&quot;Chromium\&quot;;v=\&quot;157\&quot;&quot;,&quot;sec-ch-ua-mobile&quot;:&quot;?0&quot;,&quot;sec-ch-ua-platform&quot;:&quot;\&quot;macOS\&quot;&quot;}
+Body: (none)</code></pre><pre><code>Controlled HTTP response
+503
+{&quot;content-type&quot;:&quot;application/json&quot;,&quot;content-length&quot;:&quot;31&quot;}
+{&quot;error&quot;:&quot;Service unavailable&quot;}</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Then</span> the frontend shows an accessible toy loading error</code><span class="badge result-passed">Passed</span><small>1 log entry</small></summary><div class="step-run"><pre><code>Observed accessible error
+We couldn’t load the building toys. Please try again.</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">When</span> the player retries loading building toys</code><span class="badge result-passed">Passed</span><small>3 log entries</small></summary><div class="step-run"><pre><code>HTTP request
+GET http://127.0.0.1:61976/list-toys
+{&quot;accept&quot;:&quot;*/*&quot;,&quot;referer&quot;:&quot;http://127.0.0.1:61976/&quot;,&quot;user-agent&quot;:&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36&quot;,&quot;sec-ch-ua&quot;:&quot;\&quot;Not-A.Brand\&quot;;v=\&quot;99\&quot;, \&quot;Google Chrome\&quot;;v=\&quot;157\&quot;, \&quot;Chromium\&quot;;v=\&quot;157\&quot;&quot;,&quot;sec-ch-ua-mobile&quot;:&quot;?0&quot;,&quot;sec-ch-ua-platform&quot;:&quot;\&quot;macOS\&quot;&quot;}
+Body: (none)</code></pre><pre><code>Controlled HTTP response
+200
+{&quot;content-type&quot;:&quot;application/json&quot;,&quot;content-length&quot;:&quot;58&quot;}
+{&quot;toys&quot;:[{&quot;id&quot;:&quot;retry-blocks&quot;,&quot;name&quot;:&quot;Recovered blocks&quot;}]}</code></pre><pre><code>Assert request count after retry
+Expected: 2
+Actual: 2</code></pre></div></details><details class="step-evidence"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg><code class="step-text">  <span class="hljs-keyword">Then</span> the frontend displays the recovered toy choices</code><span class="badge result-passed">Passed</span><small>2 log entries</small></summary><div class="step-run"><pre><code>Assert fetched toy {&quot;id&quot;:&quot;retry-blocks&quot;,&quot;name&quot;:&quot;Recovered blocks&quot;}
+Expected: visible=true, enabled=true, selected=true
+Actual: visible=true, enabled=true, selected=true</code></pre><pre><code>Assert toy count
+Expected: 1
+Actual: 1</code></pre></div></details></div></div>
+<p class="scenario-lineage">Lineage IDs: @frontend-list-failure</p>
+<h3 class="supporting-tests">Supporting tests</h3>
+<ul><li data-result="passed" data-lineage="@frontend-list-failure">shows loading then an accessible API error and successfully retries<span class="badge result-passed">Passed</span><details class="test-code"><summary aria-label="View test code" title="View test code"><span aria-hidden="true">&lt;/&gt;</span></summary><p class="test-source-location"><a href="vscode://file/Users/beneppel/Projects/toybox-trebuchet/tests/frontend.test.mjs:51:1" title="Open source in IDE">tests/frontend.test.mjs:51</a></p><pre><code><span class="hljs-title function_">it</span>(<span class="hljs-string">&#x27;shows loading then an accessible API error and successfully retries&#x27;</span>, { <span class="hljs-attr">tags</span>: [<span class="hljs-string">&#x27;frontend-list-failure&#x27;</span>] }, <span class="hljs-keyword">async</span> t =&gt; {
+  <span class="hljs-keyword">const</span> page = <span class="hljs-keyword">await</span> <span class="hljs-title function_">pageFor</span>(t);
+  <span class="hljs-keyword">let</span> finishRequest;
+  <span class="hljs-keyword">const</span> pending = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> { finishRequest = resolve; });
+  <span class="hljs-keyword">let</span> requests = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">route</span>(<span class="hljs-string">&#x27;**/list-toys&#x27;</span>, <span class="hljs-keyword">async</span> route =&gt; {
+    requests++;
+    <span class="hljs-keyword">if</span> (requests === <span class="hljs-number">1</span>) {
+      <span class="hljs-keyword">await</span> pending;
+      <span class="hljs-keyword">await</span> route.<span class="hljs-title function_">fulfill</span>({ <span class="hljs-attr">status</span>: <span class="hljs-number">503</span>, <span class="hljs-attr">json</span>: { <span class="hljs-attr">error</span>: <span class="hljs-string">&#x27;Service unavailable&#x27;</span> } });
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-keyword">await</span> route.<span class="hljs-title function_">fulfill</span>({ <span class="hljs-attr">json</span>: { <span class="hljs-attr">toys</span>: [{ <span class="hljs-attr">id</span>: <span class="hljs-string">&#x27;retry-blocks&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Recovered blocks&#x27;</span> }] } });
+    }
+  });
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">goto</span>(frontend.<span class="hljs-property">origin</span>);
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;status&#x27;</span>).<span class="hljs-title function_">filter</span>({ <span class="hljs-attr">hasText</span>: <span class="hljs-string">&#x27;Loading building toys&#x27;</span> }).<span class="hljs-title function_">waitFor</span>({ <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span> });
+  } <span class="hljs-keyword">finally</span> {
+    <span class="hljs-title function_">finishRequest</span>();
+  }
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;alert&#x27;</span>).<span class="hljs-title function_">waitFor</span>({ <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span> });
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>).<span class="hljs-title function_">count</span>(), <span class="hljs-number">0</span>);
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;button&#x27;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Try again&#x27;</span>, <span class="hljs-attr">exact</span>: <span class="hljs-literal">true</span> }).<span class="hljs-title function_">click</span>();
+  <span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;radio&#x27;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;Recovered blocks&#x27;</span>, <span class="hljs-attr">exact</span>: <span class="hljs-literal">true</span> }).<span class="hljs-title function_">waitFor</span>({ <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span> });
+  assert.<span class="hljs-title function_">equal</span>(requests, <span class="hljs-number">2</span>);
+  assert.<span class="hljs-title function_">equal</span>(<span class="hljs-keyword">await</span> page.<span class="hljs-title function_">getByRole</span>(<span class="hljs-string">&#x27;alert&#x27;</span>).<span class="hljs-title function_">count</span>(), <span class="hljs-number">0</span>);
+})</code></pre></details></li></ul>
+<details class="spec-change"><summary><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>Review specification change</summary><div class="comparison"><div><h3>Previously accepted</h3><p>Not previously accepted.</p></div><div><h3>Current specification</h3><pre><span class="hljs-meta">@frontend @supports:choose-building-toys:1</span>
+<span class="hljs-keyword">Feature</span><span class="hljs-punctuation">:</span> Fetch building toys in the frontend
+  Players see the toys returned by the independent toy API.
+<span class="hljs-meta">@frontend-list-failure</span>
+<span class="hljs-keyword">Scenario</span><span class="hljs-punctuation">:</span> Retry a failed toy request
+  <span class="hljs-keyword">Given</span> the toy API fails once before returning building toys
+  <span class="hljs-keyword">When</span> the player opens the building toy frontend
+  <span class="hljs-keyword">Then</span> the frontend shows an accessible toy loading error
+  <span class="hljs-keyword">When</span> the player retries loading building toys
+  <span class="hljs-keyword">Then</span> the frontend displays the recovered toy choices</pre></div></div></details>
+
+</details>
+</section></div><article id="support-features%2Fbuilding_toys.feature%3A6-1" data-support-view data-support-parent="features/building_toys.feature:6" data-support-step="1"><a data-support-back href="#features/building_toys.feature:6-step-1"><svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>Back to originating step</a><h2>Components</h2><p>See a choice of building toys when starting a fort · Step 1</p><div class="support-feature"><h3>Building toy catalogue API <small>features/api_toys.feature</small></h3><div data-support-child="features/api_toys.feature:6"><a href="#features/api_toys.feature:6">List the available building toys</a></div></div><div class="support-feature"><h3>Fetch building toys in the frontend <small>features/frontend_toys.feature</small></h3><div data-support-child="features/frontend_toys.feature:6"><a href="#features/frontend_toys.feature:6">Display the fetched toy choices</a></div><div data-support-child="features/frontend_toys.feature:12"><a href="#features/frontend_toys.feature:12">Explain that the toybox is empty</a></div><div data-support-child="features/frontend_toys.feature:19"><a href="#features/frontend_toys.feature:19">Retry a failed toy request</a></div></div></article>
+</div>
+</main>
+<script>(function Pr(){let r=document.querySelector("[data-support-library]");if(!r)return;let t=[...document.querySelectorAll("[data-support-view]")],e=[];function s(A,h=!0){h&&document.startViewTransition&&!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?document.startViewTransition(A):A()}function i(){let A=e.map(h=>{let l=h.panel.dataset.supportParent??"",u=document.getElementById(l)?.querySelector("summary h2")?.textContent??l;return{panelId:h.panel.id,parentId:l,parentName:u}});r.dataset.componentTrail=JSON.stringify(A),document.dispatchEvent(new CustomEvent("agent-intent:components",{detail:{depth:e.length,trail:A}}))}function a(A){let h;for(;e.length>A;){let l=e.pop();for(let[u,f]of l.homes)f.replaceWith(u);l.panel.hidden=!0,h=l}e.length?e[e.length-1].panel.hidden=!1:document.body.classList.remove("support-view-active"),i(),h&&(window.scrollTo({top:h.scroll,behavior:"instant"}),h.origin.focus({preventScroll:!0}))}function n(A,h){let l=t.find(f=>f.id===A);if(!l||e.some(f=>f.panel===l))return;e.length&&(e[e.length-1].panel.hidden=!0);let u={panel:l,origin:h??l.querySelector("[data-support-back]"),scroll:window.scrollY,homes:new Map};e.push(u),l.querySelectorAll("[data-support-child]").forEach(f=>{let p=document.getElementById(f.dataset.supportChild);if(!p)return;let g=document.createComment("component specification");p.replaceWith(g),u.homes.set(p,g),f.append(p);let w=f.querySelector(":scope > a");w&&(w.hidden=!0)}),l.hidden=!1,document.body.classList.add("support-view-active"),i(),(document.querySelector("[data-report-stack] [data-stack-back]")??l.querySelector("[data-support-back]"))?.focus({preventScroll:!0}),window.scrollTo({top:0,behavior:"instant"})}t.forEach(A=>{A.hidden=!0,A.querySelector("[data-support-back]")?.addEventListener("click",h=>{h.preventDefault(),s(()=>a(Math.max(0,e.length-1)))})}),document.querySelectorAll("[data-support-link]").forEach(A=>A.addEventListener("click",h=>{let l=A.hash.slice(1);t.some(u=>u.id===l)&&(h.preventDefault(),s(()=>n(l,A)))})),document.addEventListener("agent-intent:component-command",A=>{let h=A.detail;s(()=>{h.action==="open"&&h.panelId?n(h.panelId,h.origin):h.action==="back"?a(Math.max(0,e.length-1)):h.action==="close"?a(0):h.action==="to"&&Number.isInteger(h.depth)&&a(Math.max(0,Math.min(e.length,h.depth)))},h.animate!==!1)}),r.hidden=!0,i()})();</script>
+<script>(function wr(){let r=document.querySelector("[data-report-stack]");if(!r)return;let t=r.querySelector("[data-stack-back]"),e=r.querySelector("[data-stack-crumbs]"),s=r.querySelector("[data-stack-content]"),i=r.querySelector("[data-outline-toggle]"),a=[...r.querySelectorAll(".requirement-level")],n=[...r.querySelectorAll(".specification-level")],A=[...r.querySelectorAll("[data-support-view]")],h=[0,0,0],l=0,u=!1,f=JSON.parse(r.querySelector("[data-support-library]")?.dataset.componentTrail??"[]");function p(){let m=a.find(D=>D.open),d=m?n.find(D=>D.open&&D.closest(".requirement-level")===m):void 0;return{requirement:m,specification:d}}function g(m){document.dispatchEvent(new CustomEvent("agent-intent:component-command",{detail:{...m,animate:!1}}))}function w(m){document.startViewTransition&&!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?document.startViewTransition(m):m()}function R(){r.removeAttribute("data-outline-open"),i?.setAttribute("aria-expanded","false")}function S(){let{requirement:m,specification:d}=p(),D=d?2:m?1:0;t.disabled=D===0&&!f.length,e.replaceChildren();let G=["Project intent",m?.querySelector("summary h2")?.textContent??"",d?.querySelector("summary h2")?.textContent??""].slice(0,D+1);G.push(...f.map((y,k)=>k?`${y.parentName} \xB7 Components`:"Components")),G.forEach((y,k)=>{let z=document.createElement("li"),_=k===G.length-1,J=document.createElement(_?"span":"button");J.textContent=y,J.title=y,_?(J.setAttribute("aria-current","page"),J.tabIndex=-1):(J.setAttribute("type","button"),J.setAttribute("data-stack-depth",String(k)),J.addEventListener("click",()=>k<=D?H(k):w(()=>g({action:"to",depth:k-D})))),z.append(J),e.append(z)}),r.querySelectorAll("[data-outline-home], [data-outline-requirement], [data-outline-scenario], [data-outline-components]").forEach(y=>{(f.length?y.dataset.outlineComponents===f.at(-1)?.panelId:d?y.dataset.outlineScenario===d.closest("section")?.id:m?y.dataset.outlineRequirement===m.closest("[data-requirement]")?.dataset.requirement:y.hasAttribute("data-outline-home"))?y.setAttribute("aria-current","page"):y.removeAttribute("aria-current")}),D!==l&&!u&&!f.length&&(h[l]=window.scrollY,window.scrollTo({top:h[D]??0,behavior:"instant"}),(t.disabled?e.querySelector("[aria-current]"):t)?.focus({preventScroll:!0})),l=D,s.dataset.depth=String(D)}function H(m){w(()=>{u=!0,g({action:"close"});let{requirement:d,specification:D}=p();h[l]=window.scrollY,m<2&&D&&(D.open=!1),m<1&&d&&(d.open=!1),S(),u=!1,window.scrollTo({top:h[m]??0,behavior:"instant"}),(t.disabled?e.querySelector("[aria-current]"):t)?.focus({preventScroll:!0}),R()})}function T(m,d=new Set){if(d.has(m))return;d.add(m);let D=n.find(y=>y.closest("section")?.id===m);if(!D)return;let G=D.closest(".requirement-level");if(G)a.forEach(y=>{y.open=y===G}),n.filter(y=>y.closest(".requirement-level")).forEach(y=>{y.open=y===D});else{let y=A.find(k=>[...k.querySelectorAll("[data-support-child]")].some(z=>z.dataset.supportChild===m));y?.dataset.supportParent&&(T(y.dataset.supportParent,d),g({action:"open",panelId:y.id,origin:t}))}D.open=!0}function M(m){w(()=>{if(u=!0,h[l]=window.scrollY,g({action:"close"}),m.hasAttribute("data-outline-home"))n.forEach(d=>{d.open=!1}),a.forEach(d=>{d.open=!1});else if(m.dataset.outlineRequirement!==void 0)n.filter(d=>d.closest(".requirement-level")).forEach(d=>{d.open=!1}),a.forEach(d=>{d.open=d.closest("[data-requirement]")?.dataset.requirement===m.dataset.outlineRequirement});else{let d=m.dataset.outlineParent??m.dataset.outlineScenario;d&&T(d),m.dataset.outlineComponents&&g({action:"open",panelId:m.dataset.outlineComponents,origin:t})}S(),u=!1,R(),window.scrollTo({top:0,behavior:"instant"}),(t.disabled?e.querySelector("[aria-current]"):t)?.focus({preventScroll:!0})})}t.addEventListener("click",()=>f.length?w(()=>g({action:"back"})):H(Math.max(0,l-1))),a.forEach(m=>{m.addEventListener("toggle",S),m.querySelector("summary")?.addEventListener("click",d=>{d.target.closest("a, button")||(d.preventDefault(),w(()=>{h[l]=window.scrollY,u=!0,m.open=!m.open,S(),u=!1,window.scrollTo({top:0,behavior:"instant"}),(t.disabled?e.querySelector("[aria-current]"):t)?.focus({preventScroll:!0})}))})}),n.forEach(m=>{m.addEventListener("toggle",S),m.querySelector("summary")?.addEventListener("click",d=>{d.target.closest("a, button")||(d.preventDefault(),w(()=>{h[l]=window.scrollY,u=!0,m.open=!m.open,S(),u=!1,window.scrollTo({top:0,behavior:"instant"}),(t.disabled?e.querySelector("[aria-current]"):t)?.focus({preventScroll:!0})}))})}),r.querySelectorAll("[data-outline-home], [data-outline-requirement], [data-outline-scenario], [data-outline-components]").forEach(m=>m.addEventListener("click",()=>M(m))),i?.addEventListener("click",()=>{let m=i.getAttribute("aria-expanded")!=="true";i.setAttribute("aria-expanded",String(m)),r.toggleAttribute("data-outline-open",m)}),document.addEventListener("agent-intent:components",m=>{f=m.detail.trail,S()}),r.setAttribute("data-navigation-ready",""),S()})();</script>
+</body>
+</html>
