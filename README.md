@@ -14,7 +14,7 @@ is required. Shared lineage tags connect scenarios and unit tests.
 Requires **Node.js 24.19+**. Install the prebuilt tool from the public repository:
 
 ```sh
-npm install --save-dev github:bnppl/intent-dd
+npm install --save-dev github:bnppl/agent-intent
 npx agent-intent --help
 ```
 

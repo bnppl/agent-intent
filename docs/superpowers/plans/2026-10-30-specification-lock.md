@@ -23,7 +23,7 @@ an initialised source-control workspace. No candidate product code changed yet.
 
 Validation completed:
 
-- `npm ci --cache /private/tmp/intent-dd-npm-cache`: clean install, no vulnerabilities.
+- `npm ci --cache /private/tmp/agent-intent-npm-cache`: clean install, no vulnerabilities.
 - `npm run build`: both generated runtimes rebuilt.
 - `npm test`: type checking and bundle checks pass; 11 acceptance scenarios,
   90 steps and 40 unit tests pass.
@@ -33,7 +33,7 @@ Validation completed:
   from individual tests, then confirmed verification rejects that failed run.
   Reviewer reproduced the fix with no remaining material findings.
 - Browser home page shows the report and scenario expansion reveals BDD test
-  descriptions. Screenshot: /private/tmp/intent-dd-lock-report.png.
+  descriptions. Screenshot: /private/tmp/agent-intent-lock-report.png.
 - No actual project specifications were autoaccepted and no lock was generated
   for the project. Acceptance mutations ran only in disposable fixtures.
 - Active framework and test sources contain no source-control integration.
@@ -41,6 +41,6 @@ Validation completed:
   existing human review requirement. Installed enforcement remains untouched.
 
 The retired step/driver files had pre-existing formatting edits. Complete copies
-were preserved at /private/tmp/intent-dd-before-lock-intent-steps.ts and
-/private/tmp/intent-dd-before-lock-repository-driver.ts before their requested
+were preserved at /private/tmp/agent-intent-before-lock-intent-steps.ts and
+/private/tmp/agent-intent-before-lock-repository-driver.ts before their requested
 retirement. Unrelated editor configuration files were left unstaged.

@@ -52,7 +52,7 @@ The design detector reported no findings; all six status/change foreground
 and background pairs exceed 5.2:1 contrast. Browser inspection confirmed native
 expansion, distinct pass/fail/change states, and individual acceptance in an
 isolated disposable fixture. A fixture screenshot is saved at
-`/private/tmp/intent-dd-lineage-presentation.jpg`. The real workbench report is
+`/private/tmp/agent-intent-lineage-presentation.jpg`. The real workbench report is
 served at `http://127.0.0.1:8765/lineage` for human review.
 
 ## Grouping follow-up
@@ -69,4 +69,4 @@ Validation: build and full suite passed, with 25 scenarios (174 steps) and 56
 tests. Browser testing in a disposable fixture confirmed live regrouping after
 individual acceptance while the other status groups remained unchanged. The
 design detector reported no findings. Screenshot:
-`/private/tmp/intent-dd-lineage-grouped.jpg`.
+`/private/tmp/agent-intent-lineage-grouped.jpg`.

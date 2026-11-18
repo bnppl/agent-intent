@@ -22,7 +22,7 @@ behaviour and user journeys still use the executable-example workflow.
 
 Inspect the project's scripts, runtime version and tests. Install the prebuilt
 public package as a development dependency with
-`npm install --save-dev github:bnppl/intent-dd`. Preserve the project's package
+`npm install --save-dev github:bnppl/agent-intent`. Preserve the project's package
 manager and lockfile. Use Node 24.19+. Do not take over `npm start` or `npm test`.
 A linked source checkout remains supported but must be built in its own directory.
 
